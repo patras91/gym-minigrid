@@ -43,6 +43,13 @@ class DoorKeyEnv(MiniGridEnv):
 
         self.mission = "use the key to open the door and then get to the goal"
 
+        locAgent = [splitIdx, height]
+        locDoor = [splitIdx, doorIdx]
+        goal = [width-2, height-2]
+
+        taskDescriptor = locAgent + goal
+        self.taskDescriptor = taskDescriptor
+
 class DoorKeyEnv5x5(DoorKeyEnv):
     def __init__(self):
         super().__init__(size=5)
