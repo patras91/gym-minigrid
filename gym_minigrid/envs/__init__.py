@@ -7,6 +7,7 @@ from gym_minigrid.envs.gotodoor import *
 from gym_minigrid.envs.putnear import *
 from gym_minigrid.envs.lockedroom import *
 from gym_minigrid.envs.keycorridor import *
+from gym_minigrid.envs.keycorridor_GBLA import *
 from gym_minigrid.envs.unlock import *
 from gym_minigrid.envs.unlockpickup import *
 from gym_minigrid.envs.blockedunlockpickup import *
