@@ -104,13 +104,10 @@ class p():
         pass
 
 tD = p()
-tD.roomDescriptor = [1,1,1,1,1,1]
-tD.roomOrdering = [1,1,1,1,1,1]
-tD.keyLocationType = [1,1,1,1,1,1]
-tD.nRooms = 6
-tD.room_size = 6
+tD.roomDescriptor = [1,0,2,3,1,2]
+tD.roomOrdering = [1,1,1,1,1,1] # to discuss
 tD.observability = 1  # partially observable
-tD.seed = None
+tD.seed = 10
 
 env = gym.make(args.env, taskD=tD)
 #env = gym.make(args.env)

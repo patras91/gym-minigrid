@@ -10,19 +10,32 @@ class KeyCorridorGBLA(RoomGrid):
         self,
         taskD,
     ):
+        self.taskD = taskD
+
+        self.roomID = {
+            1: {
+                1: 'delivery',
+                2 : 0,
+                3 : 1,
+                4 : 2,
+            },
+            2: {
+                1: 'keyVault',
+                2: 3,
+                3: 4,
+                4: 5,
+            }
+        }
 
         super().__init__(
             room_size=6,
             num_rows=4,
             num_cols=6,
             max_steps=30*6**2, # may need to be updated
-            seed=taskD.seed,
         )
 
-        self.taskD = taskD
-        self.seed = taskD.seed
 
-        print("initialized GBLA Door Key Object")
+        print("initialized GBLA Door Key Domain")
 
     def _gen_grid(self, width, height):
         super()._gen_grid(width, height)
@@ -35,17 +48,36 @@ class KeyCorridorGBLA(RoomGrid):
                 if (j == 0 or j == self.num_cols - 1) and i < self.num_rows - 1:
                     self.remove_wall(j, i, 1)
 
-        # Add doors to every room
+
+        # Add doors to every room other than final delivery room and the key vault
+        # Add keys to locked doors
         for room_i in range(1, self.num_rows - 1):
             for room_j in range(1, self.num_cols - 1):
                 if room_i == 1:
-                    door_idx = 3
+                    door_idx = 3 # top wall
                 else:
-                    door_idx = 1
-                door, _ = self.add_door(room_j, room_i, door_idx, locked=True)
-                # Add a key in a random room on the left side
-                self.add_object(0, self._rand_int(0, self.num_rows), 'key', door.color)
+                    door_idx = 1 # bottom wall
 
+                whichRoom = self.roomID[room_i][room_j] 
+                if whichRoom in ['delivery', 'keyVault']:
+                    addLock = False
+                    addDoor = True
+
+                else:
+                    addLock = self.taskD.roomDescriptor[whichRoom] >= 2
+                    addDoor =  self.taskD.roomDescriptor[whichRoom] > 0
+
+                if addDoor:
+                    door, _ = self.add_door(room_j, room_i, door_idx, locked=addLock)
+
+                    if addLock:
+                        if self.taskD.roomDescriptor[whichRoom] == 3:
+                            # Add a key in a random room on the left side
+                            self.add_object(0, self._rand_int(0, self.num_rows), 'key', door.color)
+                        else:
+                            # place key in vault
+                            self.add_object(1, 2, 'key', door.color)
+        
         # Add an object behind the locked door
         #obj, _ = self.add_object(2, room_idx, kind=self.obj_type)
 
