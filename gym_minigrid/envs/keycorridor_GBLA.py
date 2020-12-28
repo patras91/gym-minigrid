@@ -1,49 +1,64 @@
 from gym_minigrid.roomgrid import RoomGrid
 from gym_minigrid.register import register
 
-class KeyCorridor_GBLA(RoomGrid):
+class KeyCorridorGBLA(RoomGrid):
     """
-    The agent is in a grid of several rooms. 
+    The door-key-object domain for Goal biased learning Agenda
     """
 
     def __init__(
         self,
-        nRooms=1,
-        room_size=6,
-        seed=None
+        taskD,
     ):
 
         super().__init__(
-            room_size=room_size,
-            num_rows=1,
-            max_steps=30*room_size**2,
-            seed=seed,
+            room_size=6,
+            num_rows=4,
+            num_cols=6,
+            max_steps=30*6**2, # may need to be updated
+            seed=taskD.seed,
         )
+
+        self.taskD = taskD
+        self.seed = taskD.seed
+
+        print("initialized GBLA Door Key Object")
 
     def _gen_grid(self, width, height):
         super()._gen_grid(width, height)
 
-        # Connect the middle column rooms into a hallway
-        for j in range(1, self.num_rows):
-            self.remove_wall(1, j, 3)
+        # Connect the outside rooms into a hallway by removing the walls
+        for i in range(0, self.num_rows):
+            for j in range(0, self.num_cols):
+                if (i == 0 or i == self.num_rows - 1) and j < self.num_cols - 1:
+                    self.remove_wall(j, i, 0)
+                if (j == 0 or j == self.num_cols - 1) and i < self.num_rows - 1:
+                    self.remove_wall(j, i, 1)
 
-        # Add a locked door on the bottom right
+        # Add doors to every room
+        for room_i in range(1, self.num_rows - 1):
+            for room_j in range(1, self.num_cols - 1):
+                if room_i == 1:
+                    door_idx = 3
+                else:
+                    door_idx = 1
+                door, _ = self.add_door(room_j, room_i, door_idx, locked=True)
+                # Add a key in a random room on the left side
+                self.add_object(0, self._rand_int(0, self.num_rows), 'key', door.color)
+
         # Add an object behind the locked door
-        #room_idx = self._rand_int(0, self.num_rows)
-        #door, _ = self.add_door(2, room_idx, 2, locked=True)
         #obj, _ = self.add_object(2, room_idx, kind=self.obj_type)
 
-        # Add a key in a random room on the left side
-        #self.add_object(0, self._rand_int(0, self.num_rows), 'key', door.color)
-
+        
+        
         # Place the agent in the middle
-        self.place_agent(1, self.num_rows // 2)
+        self.place_agent(0, self.num_rows // 2)
 
         # Make sure all rooms are accessible
-        self.connect_all()
+        #self.connect_all()
 
-        self.obj = obj
-        self.mission = "pick up the %s %s" % (obj.color, obj.type)
+        #self.obj = obj
+        self.mission = "" #"pick up the %s %s" % (obj.color, obj.type)
 
     def step(self, action):
         obs, reward, done, info = super().step(action)
@@ -55,54 +70,8 @@ class KeyCorridor_GBLA(RoomGrid):
 
         return obs, reward, done, info
 
-class KeyCorridorGBLA_rooms1(KeyCorridor_GBLA):
-    def __init__(self, seed=None):
-        super().__init__(
-            nRoom=1,
-            seed=seed
-        )
-
-# class KeyCorridorS3R2(KeyCorridor):
-#     def __init__(self, seed=None):
-#         super().__init__(
-#             room_size=3,
-#             num_rows=2,
-#             seed=seed
-#         )
-
-# class KeyCorridorS3R3(KeyCorridor):
-#     def __init__(self, seed=None):
-#         super().__init__(
-#             room_size=3,
-#             num_rows=3,
-#             seed=seed
-#         )
-
-# class KeyCorridorS4R3(KeyCorridor):
-#     def __init__(self, seed=None):
-#         super().__init__(
-#             room_size=4,
-#             num_rows=3,
-#             seed=seed
-#         )
-
-# class KeyCorridorS5R3(KeyCorridor):
-#     def __init__(self, seed=None):
-#         super().__init__(
-#             room_size=5,
-#             num_rows=3,
-#             seed=seed
-#         )
-
-# class KeyCorridorS6R3(KeyCorridor):
-#     def __init__(self, seed=None):
-#         super().__init__(
-#             room_size=6,
-#             num_rows=3,
-#             seed=seed
-#         )
-
 register(
-    id='MiniGrid-KeyCorridorGBLA_rooms1',
-    entry_point='gym_minigrid.envs:KeyCorridorGBLA_rooms1'
+    id='MiniGrid-KeyCorridorGBLA-v0',
+    entry_point='gym_minigrid.envs:KeyCorridorGBLA'
+    
 )

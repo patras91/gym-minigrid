@@ -99,7 +99,21 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-env = gym.make(args.env)
+class p():
+    def __init__(self):
+        pass
+
+tD = p()
+tD.roomDescriptor = [1,1,1,1,1,1]
+tD.roomOrdering = [1,1,1,1,1,1]
+tD.keyLocationType = [1,1,1,1,1,1]
+tD.nRooms = 6
+tD.room_size = 6
+tD.observability = 1  # partially observable
+tD.seed = None
+
+env = gym.make(args.env, taskD=tD)
+#env = gym.make(args.env)
 
 if args.agent_view:
     env = RGBImgPartialObsWrapper(env)
