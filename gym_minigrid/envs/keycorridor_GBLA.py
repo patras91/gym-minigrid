@@ -89,27 +89,26 @@ class KeyCorridorGBLA(RoomGrid):
                             self.add_object(1, 2, 'key', door.color)
         
         # Add three object in the rooms
-        count = 0
-        while(count < 3):
+        self.obj = []
+        while(len(self.obj) < 3):
             loc = self._rand_int(0, 6)
             if self.taskD.roomDescriptor[loc] > 0:
                 obj, _ = self.add_object(self.roomLoc[loc][1], self.roomLoc[loc][0], kind=self.obj_type)
-                count += 1
+                self.obj.append(obj)
 
         # Place the agent in the middle
         self.place_agent(0, self.num_rows // 2)
 
         # Make sure all rooms are accessible
         #self.connect_all()
-
-        #self.obj = obj
         self.mission = "" #"pick up the %s %s" % (obj.color, obj.type)
 
     def step(self, action):
         obs, reward, done, info = super().step(action)
 
         if action == self.actions.pickup:
-            if self.carrying and self.carrying == self.obj:
+            if self.carrying and self.carrying in self.obj:
+                print(self.carrying, self.obj)
                 reward = self._reward()
                 done = True
 
