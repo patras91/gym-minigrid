@@ -11,6 +11,7 @@ class KeyCorridorGBLA(RoomGrid):
         taskD,
     ):
         self.taskD = taskD
+        self.obj_type = "ball"
 
         self.roomID = {
             1: {
@@ -25,6 +26,15 @@ class KeyCorridorGBLA(RoomGrid):
                 3: 4,
                 4: 5,
             }
+        }
+
+        self.roomLoc = {
+            0: (1,2),
+            1: (1,3),
+            2: (1,4),
+            3: (2,2),
+            4: (2,3),
+            5: (2,4),
         }
 
         super().__init__(
@@ -78,11 +88,14 @@ class KeyCorridorGBLA(RoomGrid):
                             # place key in vault
                             self.add_object(1, 2, 'key', door.color)
         
-        # Add an object behind the locked door
-        #obj, _ = self.add_object(2, room_idx, kind=self.obj_type)
+        # Add three object in the rooms
+        count = 0
+        while(count < 3):
+            loc = self._rand_int(0, 6)
+            if self.taskD.roomDescriptor[loc] > 0:
+                obj, _ = self.add_object(self.roomLoc[loc][1], self.roomLoc[loc][0], kind=self.obj_type)
+                count += 1
 
-        
-        
         # Place the agent in the middle
         self.place_agent(0, self.num_rows // 2)
 
