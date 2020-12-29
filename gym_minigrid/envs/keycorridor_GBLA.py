@@ -120,7 +120,8 @@ class KeyCorridorGBLA(RoomGrid):
                 self.obj.append(obj)
 
         else:
-            self.add_object(self._rand_int(1, self.num_cols), 0, kind=self.obj_type)
+            obj, _ = self.add_object(self._rand_int(1, self.num_cols), 0, kind=self.obj_type)
+            self.obj.append(obj)
 
         # Place the agent in the middle
         self.place_agent(0, self.num_rows // 2)
