@@ -104,7 +104,8 @@ class p():
         pass
 
 tD = p()
-tD.roomDescriptor = [1,0,2,3,1,2]
+tD.roomDescriptor = [1,0,4,3,1,2]
+tD.roomSize = 4 # can't be less than 3
 tD.roomOrdering = [1,1,1,1,1,1] # to discuss
 tD.observability = 1  # partially observable
 tD.seed = 10
