@@ -114,22 +114,23 @@ class KeyCorridorGBLA(RoomGrid):
             if self.taskD.roomDescriptor[room] == self.roomDescriptor.noDoor:
                 self.add_passage(room)
 
-        
+        # Place the agent in the middle
+        self.place_agent(0, self.num_rows // 2)
+
         # Add two object in the rooms
         self.obj = []
         #while(len(self.obj) < 3):
-        if self.taskD.roomSize > 3:
+        if self.taskD.roomSize >= 3:
             loc = self._rand_int(0, 6)
-            if self.taskD.roomDescriptor[loc] > 0:
-                obj, _ = self.add_object(self.roomLoc[loc][1], self.roomLoc[loc][0], kind=self.obj_type)
-                self.obj.append(obj)
+            assert any(rd > 0 for rd in self.taskD.roomDescriptor)      # make sure that at least one room is open
+            while self.taskD.roomDescriptor[loc] == 0:                  # while you have chosen a blocked room
+                loc = self._rand_int(0,6)                               # reroll the room location
+            obj, _ = self.add_object(self.roomLoc[loc][1], self.roomLoc[loc][0], kind=self.obj_type)
+            self.obj.append(obj)
 
         else:
             obj, _ = self.add_object(self._rand_int(1, self.num_cols), 0, kind=self.obj_type)
             self.obj.append(obj)
-
-        # Place the agent in the middle
-        self.place_agent(0, self.num_rows // 2)
 
         # Make sure all rooms are accessible
         #self.connect_all()
