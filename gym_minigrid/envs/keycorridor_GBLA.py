@@ -19,6 +19,11 @@ class KeyCorridorGBLA(RoomGrid):
         self,
         taskD,
     ):
+        """
+        This is the initialization function for the RoomDescriptor object.
+
+        @param taskD:
+        """
         self.taskD = taskD
         self.obj_type = "ball"
 
