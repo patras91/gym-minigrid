@@ -105,13 +105,15 @@ class p():
 
 tD = p()
 # 341, 681, and 1021
-tD.envD = np.array([[0,0,0,0,0],
+tD.envDescriptor = np.array([[0,0,0,0,0],
                     [0,341,0,0,0],
                     [0,0,681,0,0],
                     [0,0,0,1021,0],
                     [0,0,0,0,0]])
 
-tD.envD = np.array([[0,0,0,0,0,0,0,0,0,0],
+tD.envDescriptor = np.array([[0,0],[0,0]])
+
+tD.envDescriptor = np.array([[0,0,0,0,0,0,0,0,0,0],
                     [0,5,5,5,5,5,5,5,5,0],
                     [0,65,65,65,65,65,65,65,65,0],
                     [0,0,0,0,0,0,0,0,0,0],
@@ -123,10 +125,12 @@ tD.envD = np.array([[0,0,0,0,0,0,0,0,0,0],
                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                     ])
 
+tD.envDescriptor = np.array([[0,0,0],[0,13,0],[0,0,0]])
+
 
 tD.roomDescriptor = [1,0,4,3,1,2]
 tD.roomDescriptor = [1,0,0,0,0,0]
-tD.roomSize = 10 # can't be less than 3
+tD.roomSize = 3 # can't be less than 3
 tD.roomOrdering = [1,1,1,1,1,1] # to discuss
 tD.observability = 1  # partially observable
 tD.seed = 11

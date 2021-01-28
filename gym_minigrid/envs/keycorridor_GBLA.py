@@ -1,18 +1,22 @@
 from gym_minigrid.roomgrid import RoomGrid, Room
 from gym_minigrid.register import register
 from enum import IntEnum
+from random import choice
 
 from ..minigrid import *
+
 
 class RoomGBLA(Room):
     def __init__(
         self,
         top,
-        size
+        size,
+        roomType
     ):
         # Top-left corner and size (tuples)
         self.top = top
         self.size = size
+        self.type = roomType
 
         # List of door objects and door positions
         # Order of the doors is right, down, left, up
@@ -30,8 +34,6 @@ class RoomGBLA(Room):
 
         # List of objects contained
         self.objs = []
-
-
 
 class KeyCorridorGBLA(RoomGrid):
     """
@@ -56,6 +58,7 @@ class KeyCorridorGBLA(RoomGrid):
         @param taskD:
         """
         self.taskD = taskD
+        self.taskD.envDescriptor = np.array(self.taskD.envDescriptor)
         self.obj_type = "ball"
 
         self.roomID = {
@@ -86,8 +89,8 @@ class KeyCorridorGBLA(RoomGrid):
 
         super().__init__(
             room_size=taskD.roomSize,
-            num_rows=taskD.envD.shape[0],
-            num_cols=taskD.envD.shape[1],
+            num_rows=taskD.envDescriptor.shape[0],
+            num_cols=taskD.envDescriptor.shape[1],
             max_steps=30*taskD.roomSize**2, # may need to be updated
         )
 
@@ -110,7 +113,10 @@ class KeyCorridorGBLA(RoomGrid):
 
         return roomType, (doorNorth, doorEast, doorSouth, doorWest)
 
-
+    def descriptorDistance(self, roomDesc1, roomDesc2):
+        rType1, rDoors1 = self.parseDescriptor(roomDesc1)
+        rType2, rDoors2 = self.parseDescriptor(roomDesc2)
+        return None
 
     def _gen_grid(self, width, height):
         # Create the grid
@@ -127,11 +133,12 @@ class KeyCorridorGBLA(RoomGrid):
 
             # For each column of rooms
             for i in range(0, self.num_cols):
-                roomType, doorLocs = self.parseDescriptor(self.taskD.envD[j, i])
+                roomType, doorLocs = self.parseDescriptor(self.taskD.envDescriptor[j, i])
 
                 room = RoomGBLA(
                     (i * (self.room_size-1), j * (self.room_size-1)),
-                    (self.room_size, self.room_size)
+                    (self.room_size, self.room_size),
+                    roomType
                 )
                 row.append(room)
 
@@ -141,11 +148,9 @@ class KeyCorridorGBLA(RoomGrid):
 
             self.room_grid.append(row)
 
-        # The agent starts in the middle, facing right
-        self.agent_pos = (
-            (self.num_cols // 2) * (self.room_size-1) + (self.room_size // 2),
-            (self.num_rows // 2) * (self.room_size-1) + (self.room_size // 2)
-        )
+        # Place the agent in the middle
+        self.place_agent(0, self.num_rows // 2)
+
         self.agent_dir = 0
 
         # For each row of rooms
@@ -153,7 +158,7 @@ class KeyCorridorGBLA(RoomGrid):
             # For each column of rooms
             for i in range(0, self.num_cols):
                 roomType, (doorNorth, doorEast, doorSouth, doorWest) = \
-                                    self.parseDescriptor(self.taskD.envD[j, i])
+                                    self.parseDescriptor(self.taskD.envDescriptor[j, i])
                 room = self.room_grid[j][i]
 
                 x_l, y_l = (room.top[0] + 1, room.top[1] + 1)
@@ -182,7 +187,25 @@ class KeyCorridorGBLA(RoomGrid):
                     self.set_door(doorNorth, (i,j), room.door_pos[3])
 
 
+        # Add two object in the rooms
+        self.obj = []
+        n_obj = 1
+        if self.taskD.roomSize >= 3:
+            while(len(self.obj) < n_obj):
+                locs = [(r,c) for r in range(self.num_rows) for c in range(self.num_cols)]
+                loc = choice(locs)
+                try:
+                    obj, _ = self.add_object(loc[1], loc[0], kind=self.obj_type)
+                    self.obj.append(obj)
+                except:
+                    pass
 
+        else:
+            obj, _ = self.add_object(self._rand_int(1, self.num_cols), 0, kind=self.obj_type)
+            self.obj.append(obj)
+
+        # Make sure all rooms are accessible
+        self.mission = ""  # "pick up the %s %s" % (obj.color, obj.type)
 
     def set_door(self, doorType, roomLoc, doorLoc):
         if doorType == 0:
@@ -194,7 +217,16 @@ class KeyCorridorGBLA(RoomGrid):
         elif doorType == 3:
             doorColor = self._rand_color()
             self.add_door(*roomLoc, locked=True, color=doorColor)
-            self.add_object(self._rand_int(0, self.num_cols), self._rand_int(0, self.num_rows), 'key', doorColor)
+
+            n = 0
+            while n<100:
+                n+=1
+                try:
+                    self.add_object(self._rand_int(0, self.num_cols), self._rand_int(0, self.num_rows), 'key', doorColor)
+                    n+=100
+                except:
+                    pass
+
 
     def _gen_grid_old(self, width, height):
         super()._gen_grid(width, height)
