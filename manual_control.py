@@ -104,11 +104,36 @@ class p():
         pass
 
 tD = p()
+# 341, 681, and 1021
+tD.envDescriptor = np.array([[0,0,0,0,0],
+                    [0,341,0,0,0],
+                    [0,0,681,0,0],
+                    [0,0,0,1021,0],
+                    [0,0,0,0,0]])
+
+tD.envDescriptor = np.array([[0,0],[0,0]])
+
+tD.envDescriptor = np.array([[0,0,0,0,0,0,0,0,0,0],
+                    [0,5,5,5,5,5,5,5,5,0],
+                    [0,65,65,65,65,65,65,65,65,0],
+                    [0,0,0,0,0,0,0,0,0,0],
+                    [0, 9, 9, 9, 9, 9, 9, 9, 9, 0],
+                    [0, 129, 129, 129, 129, 129, 129, 129, 129, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 13, 13, 13, 13, 13, 13, 13, 13, 0],
+                    [0, 193, 193, 193, 193, 193, 193, 193, 193, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    ])
+
+tD.envDescriptor = np.array([[0,0,0],[0,13,0],[0,0,0]])
+
+
 tD.roomDescriptor = [1,0,4,3,1,2]
-tD.roomSize = 4 # can't be less than 3
+tD.roomDescriptor = [1,0,0,0,0,0]
+tD.roomSize = 3 # can't be less than 3
 tD.roomOrdering = [1,1,1,1,1,1] # to discuss
 tD.observability = 1  # partially observable
-tD.seed = 10
+tD.seed = 11
 
 env = gym.make(args.env, taskD=tD)
 #env = gym.make(args.env)
