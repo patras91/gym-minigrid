@@ -1,10 +1,15 @@
+__authors__="sunandita, mark"
+''' Last updated: 
+        Sunandita: Feb 3, 2021
+        Mark: Jan 31, 2021
+'''
+
 from gym_minigrid.roomgrid import RoomGrid, Room
 from gym_minigrid.register import register
 from enum import IntEnum
 from random import choice
 
 from ..minigrid import *
-
 
 class RoomGBLA(Room):
     def __init__(
@@ -227,7 +232,6 @@ class KeyCorridorGBLA(RoomGrid):
                 except:
                     pass
 
-
     def _gen_grid_old(self, width, height):
         super()._gen_grid(width, height)
 
@@ -295,17 +299,25 @@ class KeyCorridorGBLA(RoomGrid):
         self.mission = "" #"pick up the %s %s" % (obj.color, obj.type)
 
     def step(self, action):
+        print(self.taskD.goalDescriptor.goalId)
         obs, reward, done, info = super().step(action)
 
-        if action == self.actions.pickup:
-            if self.carrying and self.carrying in self.obj:
-                reward = self._reward()
-                done = True
+        reward = self.taskD.goalDescriptor.GetReward()
+        if reward == 1:
+            done = True
+        # if action == self.actions.pickup:
+        #     if self.carrying and self.carrying in self.obj:
+        #         reward = self._reward()
+        #         done = True
 
         return obs, reward, done, info
+
+    def SetGoalDescriptor(self, gD):
+        self.goalDescriptor = gD
 
 register(
     id='MiniGrid-KeyCorridorGBLA-v0',
     entry_point='gym_minigrid.envs:KeyCorridorGBLA'
     
 )
+

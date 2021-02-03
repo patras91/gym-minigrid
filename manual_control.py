@@ -7,6 +7,7 @@ import gym
 import gym_minigrid
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
+from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
 
 def redraw(img):
     if not args.agent_view:
@@ -136,7 +137,8 @@ tD.observability = 1  # partially observable
 tD.seed = 11
 
 env = gym.make(args.env, taskD=tD)
-#env = gym.make(args.env)
+
+tD.goalDescriptor = GetGoalDescriptor(env) 
 
 if args.agent_view:
     env = RGBImgPartialObsWrapper(env)
