@@ -65,7 +65,7 @@ def key_handler(event):
     if event.key == 'pageup':
         step(env.actions.pickup)
         return
-    if event.key == 'pagedown':
+    if event.key == 'd':
         step(env.actions.drop)
         return
 
@@ -77,7 +77,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--env",
     help="gym environment to load",
-    default='MiniGrid-MultiRoom-N6-v0'
+    default='MiniGrid-KeyCorridorGBLA-v0'
 )
 parser.add_argument(
     "--seed",

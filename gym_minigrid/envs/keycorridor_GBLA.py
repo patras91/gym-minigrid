@@ -312,9 +312,6 @@ class KeyCorridorGBLA(RoomGrid):
 
         return obs, reward, done, info
 
-    def SetGoalDescriptor(self, gD):
-        self.goalDescriptor = gD
-
 register(
     id='MiniGrid-KeyCorridorGBLA-v0',
     entry_point='gym_minigrid.envs:KeyCorridorGBLA'
