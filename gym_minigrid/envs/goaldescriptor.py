@@ -12,7 +12,7 @@ class GoalDescriptor():
     def GetReward(self):
         if self.achieved == None:
             return 0
-        if self.achieved(self.goalArgs):
+        if self.achieved(self.goalArgs, self.goalValue):
             return self.reward
         else:
             # search recursively the refinement how further along you are and reward accordingly
@@ -29,11 +29,11 @@ def GetGoalDescriptor(env):
         Returns the goal hierarchy and rewards for the minigrid environment
     '''
 
-    def placeHolder(env):
-        print(env.agent_pos)
+    def placeHolder(env, v):
+        #print(env.agent_pos)
         return False
 
-    def searchKey(env):
+    def searchKey(env, v):
         # the position the agent is facing
         fwd_pos = env.front_pos
 
@@ -42,41 +42,43 @@ def GetGoalDescriptor(env):
 
         return fwd_cell and fwd_cell.type == "key"
 
-    def pickupKey(env):
+    def pickupKey(env, v):
         return env.carrying and env.carrying.type == "key" 
 
     g_searchKey = GoalDescriptor('searchKey', (env), (), 1/12, func=searchKey)
     g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1/12, func=pickupKey)
     g_hasKey = GoalDescriptor('hasKey', (env), (), 1/6, func=pickupKey, refinement=(g_searchKey, g_pickupKey))
 
+    def openDoor(env, d):
+        return False
 
-    def openDoor(env):
-        pass
-
-    def goToRoom(env):
-        print(env.grid.get(*env.agent_pos))
+    def goToRoom(env, r):
+        print("matching with", r)
+        print("agent's room", env.get_room(*env.agent_pos))
+        return r.pos_inside(*env.agent_pos)
 
     g_openDoor = GoalDescriptor('openDoor', (env), (), 1/12, func=openDoor)
     g_passDoor = GoalDescriptor('passDoor', (env), (), 1/12, func=placeHolder)
-    g_goToRoom = GoalDescriptor('goToRoom', (env), (), 1/6, func=goToRoom, refinement=(g_openDoor, g_passDoor))
+    print(env.object_room)
+    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1/6, func=goToRoom, refinement=(g_openDoor, g_passDoor))
 
-    g_getNear = GoalDescriptor('getNear', (env), (), 1/3, func=placeHolder, refinement=(g_hasKey, g_goToRoom))
+    g_getNear = GoalDescriptor('getNear', (env), (), 1/3, func=placeHolder, refinement=(g_hasKey, g_goToRoom1))
 
-    def pickupObj(env):
+    def pickupObj(env, v):
         return env.carrying and env.carrying in env.obj
 
     g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1/3, func=pickupObj)
 
-    def putDown(env): # should not get reward for putdown if it has never picked up anything
+    def putDown(env, v): # should not get reward for putdown if it has never picked up anything
         return env.carrying == None
 
-    g_goToRoom = GoalDescriptor('goToRoom', (env), (), 1/6, func=placeHolder)
+    g_goToRoom2 = GoalDescriptor('goToRoom', (env), (1), 1/6, func=placeHolder)
     g_putDown = GoalDescriptor('putDown', (env), (), 1/6, func=putDown)
-    g_deliver = GoalDescriptor('deliver', (env), (), 1/3, func=placeHolder, refinement=(g_goToRoom, g_putDown))
+    g_deliver = GoalDescriptor('deliver', (env), (), 1/3, func=placeHolder, refinement=(g_goToRoom2, g_putDown))
 
     g_dropOff = GoalDescriptor('dropOff', (env), (), 1, func=placeHolder, refinement=(g_getNear, g_pickupObj, g_deliver))
 
-    return g_goToRoom
+    return g_goToRoom1
 
 
 # Unit Tests

@@ -40,6 +40,9 @@ class RoomGBLA(Room):
         # List of objects contained
         self.objs = []
 
+    def __repr__(self):
+        return "room: " + str(self.top) + str(self.size) + str(self.type)
+
 class KeyCorridorGBLA(RoomGrid):
     """
     The door-key-object domain for Goal biased learning Agenda
@@ -202,6 +205,8 @@ class KeyCorridorGBLA(RoomGrid):
                 try:
                     obj, _ = self.add_object(loc[1], loc[0], kind=self.obj_type)
                     self.obj.append(obj)
+                    # until we integrate with a planner, we need this info for the sub-goals in the goal descriptors
+                    self.object_room = self.get_room(loc[1], loc[0])
                 except:
                     pass
 
