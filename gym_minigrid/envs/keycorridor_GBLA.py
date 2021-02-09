@@ -1,6 +1,6 @@
 __authors__="sunandita, mark"
 ''' Last updated: 
-        Sunandita: Feb 3, 2021
+        Sunandita: Feb 8, 2021
         Mark: Jan 31, 2021
 '''
 
@@ -8,6 +8,7 @@ from gym_minigrid.roomgrid import RoomGrid, Room
 from gym_minigrid.register import register
 from enum import IntEnum
 from random import choice
+from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
 
 from ..minigrid import *
 
@@ -105,6 +106,10 @@ class KeyCorridorGBLA(RoomGrid):
 
         print("initialized GBLA Door Key Domain")
 
+    def reset(self):
+        super().reset()
+        self.taskD.goalDescriptor = GetGoalDescriptor(self) 
+
     def add_passage(self, room):
         l = self.roomLoc[room]
         if room in ['delivery', 0, 1, 2]:
@@ -128,7 +133,7 @@ class KeyCorridorGBLA(RoomGrid):
 
     def _gen_grid(self, width, height):
         # Create the grid
-
+        print("in gen_grid")
 
         self.grid = Grid(width, height)
         self.grid.wall_rect(0, 0, width, height)
@@ -200,6 +205,7 @@ class KeyCorridorGBLA(RoomGrid):
         n_obj = 1
         if self.taskD.roomSize >= 3:
             while(len(self.obj) < n_obj):
+                print(self.obj)
                 locs = [(r,c) for r in range(self.num_rows) for c in range(self.num_cols)]
                 loc = choice(locs)
                 try:
@@ -207,6 +213,7 @@ class KeyCorridorGBLA(RoomGrid):
                     self.obj.append(obj)
                     # until we integrate with a planner, we need this info for the sub-goals in the goal descriptors
                     self.object_room = self.get_room(loc[1], loc[0])
+                    print(loc[1], loc[0], "added object in ", self.object_room)
                 except:
                     pass
 

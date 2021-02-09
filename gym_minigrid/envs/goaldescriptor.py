@@ -54,7 +54,7 @@ def GetGoalDescriptor(env):
 
     def goToRoom(env, r):
         print("matching with", r)
-        print("agent's room", env.get_room(*env.agent_pos))
+        print("agent's room", env.room_from_pos(*env.agent_pos))
         return r.pos_inside(*env.agent_pos)
 
     g_openDoor = GoalDescriptor('openDoor', (env), (), 1/12, func=openDoor)

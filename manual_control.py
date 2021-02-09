@@ -7,7 +7,7 @@ import gym
 import gym_minigrid
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
-from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
+#from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
 
 def redraw(img):
     if not args.agent_view:
@@ -138,8 +138,6 @@ tD.seed = 11
 
 env = gym.make(args.env, taskD=tD)
 
-tD.goalDescriptor = GetGoalDescriptor(env) 
-
 if args.agent_view:
     env = RGBImgPartialObsWrapper(env)
     env = ImgObsWrapper(env)
@@ -148,6 +146,9 @@ window = Window('gym_minigrid - ' + args.env)
 window.reg_key_handler(key_handler)
 
 reset()
+
+#print("setting goal des")
+#tD.goalDescriptor = GetGoalDescriptor(env) 
 
 # Blocking event loop
 window.show(block=True)
