@@ -31,10 +31,6 @@ def GetGoalDescriptor(env):
 
     dropOff_room = env.get_room(0,0) # temporary
 
-    def placeHolder(env, v):
-        #print(env.agent_pos)
-        return False
-
     def searchKey(env, v):
         # the position the agent is facing
         fwd_pos = env.front_pos
@@ -51,17 +47,20 @@ def GetGoalDescriptor(env):
     g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1/12, func=pickupKey)
     g_hasKey = GoalDescriptor('hasKey', (env), (), 1/6, func=pickupKey, refinement=(g_searchKey, g_pickupKey))
 
-    def openDoor(env, d):
-        return False
+    def openDoor(env, room):
+        for door in room.doors:
+            if door:
+                return door.is_open
+        return True
 
     def goToRoom(env, room):
         return room.pos_inside(*env.agent_pos)
 
-    g_openDoor = GoalDescriptor('openDoor', (env), (), 1/12, func=placeHolder)
-    g_passDoor = GoalDescriptor('passDoor', (env), (), 1/12, func=placeHolder)
+    g_openDoor = GoalDescriptor('openDoor', (env), (env.object_room), 1/12, func=openDoor)
+    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1/12, func=goToRoom)
     g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1/6, func=goToRoom, refinement=(g_openDoor, g_passDoor))
 
-    g_getNear = GoalDescriptor('getNear', (env), (), 1/3, func=placeHolder, refinement=(g_hasKey, g_goToRoom1))
+    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1/3, func=goToRoom, refinement=(g_hasKey, g_goToRoom1))
 
     def pickupObj(env, v):
         return env.carrying and env.carrying in env.obj
@@ -83,7 +82,7 @@ def GetGoalDescriptor(env):
 
     g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, func=dropOff, refinement=(g_getNear, g_pickupObj, g_deliver))
 
-    return g_dropOff
+    return g_passDoor
 
 
 # Unit Tests
