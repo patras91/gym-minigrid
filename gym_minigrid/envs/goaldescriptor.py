@@ -29,6 +29,8 @@ def GetGoalDescriptor(env):
         Returns the goal hierarchy and rewards for the minigrid environment
     '''
 
+    dropOff_room = env.get_room(0,0) # temporary
+
     def placeHolder(env, v):
         #print(env.agent_pos)
         return False
@@ -52,14 +54,11 @@ def GetGoalDescriptor(env):
     def openDoor(env, d):
         return False
 
-    def goToRoom(env, r):
-        print("matching with", r)
-        print("agent's room", env.room_from_pos(*env.agent_pos))
-        return r.pos_inside(*env.agent_pos)
+    def goToRoom(env, room):
+        return room.pos_inside(*env.agent_pos)
 
-    g_openDoor = GoalDescriptor('openDoor', (env), (), 1/12, func=openDoor)
+    g_openDoor = GoalDescriptor('openDoor', (env), (), 1/12, func=placeHolder)
     g_passDoor = GoalDescriptor('passDoor', (env), (), 1/12, func=placeHolder)
-    print(env.object_room)
     g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1/6, func=goToRoom, refinement=(g_openDoor, g_passDoor))
 
     g_getNear = GoalDescriptor('getNear', (env), (), 1/3, func=placeHolder, refinement=(g_hasKey, g_goToRoom1))
@@ -72,13 +71,19 @@ def GetGoalDescriptor(env):
     def putDown(env, v): # should not get reward for putdown if it has never picked up anything
         return env.carrying == None
 
-    g_goToRoom2 = GoalDescriptor('goToRoom', (env), (1), 1/6, func=placeHolder)
+    def dropOff(env, room):
+        for item in env.obj:
+            if not room.pos_inside(*item.cur_pos):
+                return False
+        return True
+
+    g_goToRoom2 = GoalDescriptor('goToRoom', (env), (dropOff_room), 1/6, func=goToRoom)
     g_putDown = GoalDescriptor('putDown', (env), (), 1/6, func=putDown)
-    g_deliver = GoalDescriptor('deliver', (env), (), 1/3, func=placeHolder, refinement=(g_goToRoom2, g_putDown))
+    g_deliver = GoalDescriptor('deliver', (env), (dropOff_room), 1/3, func=dropOff, refinement=(g_goToRoom2, g_putDown))
 
-    g_dropOff = GoalDescriptor('dropOff', (env), (), 1, func=placeHolder, refinement=(g_getNear, g_pickupObj, g_deliver))
+    g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, func=dropOff, refinement=(g_getNear, g_pickupObj, g_deliver))
 
-    return g_goToRoom1
+    return g_dropOff
 
 
 # Unit Tests
