@@ -107,8 +107,9 @@ class KeyCorridorGBLA(RoomGrid):
         print("initialized GBLA Door Key Domain")
 
     def reset(self):
-        super().reset()
-        self.taskD.goalDescriptor = GetGoalDescriptor(self) 
+        obs = super().reset()
+        self.taskD.goalDescriptor = GetGoalDescriptor(self)
+        return obs
 
     def add_passage(self, room):
         l = self.roomLoc[room]
