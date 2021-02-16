@@ -50,7 +50,7 @@ class KeyCorridorGBLA(RoomGrid):
     """
     The door-key-object domain for Goal biased learning Agenda
     """
-    class roomDescriptor(IntEnum):
+    class enumRoomDescriptor(IntEnum):
         doesntExist = 0
         noDoor = 1
         unLockedDoor = 2
@@ -68,8 +68,10 @@ class KeyCorridorGBLA(RoomGrid):
 
         @param taskD:
         """
-        self.taskD = taskD
-        self.taskD.envDescriptor = np.array(self.taskD.envDescriptor)
+        self.envDescriptor = np.array(taskD.envDescriptor)
+        self.goalDescriptor = taskD.goalDescriptor
+        self.roomSize = taskD.roomSize
+        self.roomDescriptor = taskD.roomDescriptor
         self.obj_type = "ball"
 
         self.roomID = {
@@ -105,14 +107,14 @@ class KeyCorridorGBLA(RoomGrid):
             max_steps=30*taskD.roomSize**2, # may need to be updated
         )
 
-
+        del(taskD)
         print("initialized GBLA Door Key Domain")
 
     def genGoalDescriptor(self):
         gd = GetGoalDescriptor(self)
-        self.taskD.goalDescriptor = gd
- #       self.taskD.goalDescriptor = None
-        return gd
+        self.goalDescriptor = gd
+ #       self.goalDescriptor = None
+        return None
 
     def reset(self):
         obs = super().reset()
@@ -155,7 +157,7 @@ class KeyCorridorGBLA(RoomGrid):
 
             # For each column of rooms
             for i in range(0, self.num_cols):
-                roomType, doorLocs = self.parseDescriptor(self.taskD.envDescriptor[j, i])
+                roomType, doorLocs = self.parseDescriptor(self.envDescriptor[j, i])
 
                 room = RoomGBLA(
                     (i * (self.room_size-1), j * (self.room_size-1)),
@@ -180,7 +182,7 @@ class KeyCorridorGBLA(RoomGrid):
             # For each column of rooms
             for i in range(0, self.num_cols):
                 roomType, (doorNorth, doorEast, doorSouth, doorWest) = \
-                                    self.parseDescriptor(self.taskD.envDescriptor[j, i])
+                                    self.parseDescriptor(self.envDescriptor[j, i])
                 room = self.room_grid[j][i]
 
                 x_l, y_l = (room.top[0] + 1, room.top[1] + 1)
@@ -212,7 +214,7 @@ class KeyCorridorGBLA(RoomGrid):
         # Add two object in the rooms
         self.obj = []
         n_obj = 1
-        if self.taskD.roomSize >= 3:
+        if self.roomSize >= 3:
             while(len(self.obj) < n_obj):
                 print(self.obj)
                 locs = [(r,c) for r in range(self.num_rows) for c in range(self.num_cols)]
@@ -280,21 +282,21 @@ class KeyCorridorGBLA(RoomGrid):
             else:
                 door_idx = 1 # bottom wall
 
-            addLock = self.taskD.roomDescriptor[room] >= 3
-            addDoor =  self.taskD.roomDescriptor[room] >= 2
+            addLock = self.roomDescriptor[room] >= 3
+            addDoor =  self.roomDescriptor[room] >= 2
 
             if addDoor:
                 door, _ = self.add_door(room_y, room_x, door_idx, locked=addLock)
 
                 if addLock:
-                    if self.taskD.roomDescriptor[room] == self.roomDescriptor.lockedWithKeyInHallway or self.taskD.roomSize == 3:
+                    if self.roomDescriptor[room] == self.enumRoomDescriptor.lockedWithKeyInHallway or self.roomSize == 3:
                         # Add a key in a random room on the left side
                         self.add_object(0, self._rand_int(0, self.num_rows), 'key', door.color)
                     else:
                         # place key in vault
                         self.add_object(1, 2, 'key', door.color)
             
-            if self.taskD.roomDescriptor[room] == self.roomDescriptor.noDoor:
+            if self.roomDescriptor[room] == self.enumRoomDescriptor.noDoor:
                 self.add_passage(room)
 
         # Place the agent in the middle
@@ -303,10 +305,10 @@ class KeyCorridorGBLA(RoomGrid):
         # Add two object in the rooms
         self.obj = []
         #while(len(self.obj) < 3):
-        if self.taskD.roomSize >= 3:
+        if self.roomSize >= 3:
             loc = self._rand_int(0, 6)
-            assert any(rd > 0 for rd in self.taskD.roomDescriptor)      # make sure that at least one room is open
-            while self.taskD.roomDescriptor[loc] == 0:                  # while you have chosen a blocked room
+            assert any(rd > 0 for rd in self.roomDescriptor)      # make sure that at least one room is open
+            while self.roomDescriptor[loc] == 0:                  # while you have chosen a blocked room
                 loc = self._rand_int(0,6)                               # reroll the room location
             obj, _ = self.add_object(self.roomLoc[loc][1], self.roomLoc[loc][0], kind=self.obj_type)
             self.obj.append(obj)
@@ -320,10 +322,13 @@ class KeyCorridorGBLA(RoomGrid):
         self.mission = "" #"pick up the %s %s" % (obj.color, obj.type)
 
     def step(self, action):
-        print(self.taskD.goalDescriptor.goalId)
+        print(self.goalDescriptor.goalId)
         obs, reward, done, info = super().step(action)
 
-        reward = self.taskD.goalDescriptor.GetReward()
+        if self.goal_function(self, self.goal_value) == True: reward = self.goal_reward
+
+        #reward = self.goalDescriptor.GetReward()
+
         if reward == 1:
             done = True
         # if action == self.actions.pickup:
