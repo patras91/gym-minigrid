@@ -104,7 +104,7 @@ class p():
     def __init__(self):
         pass
 
-tD = p()
+tD = TaskDescriptor()
 # 341, 681, and 1021
 tD.envDescriptor = np.array([[0,0,0,0,0],
                     [0,341,0,0,0],

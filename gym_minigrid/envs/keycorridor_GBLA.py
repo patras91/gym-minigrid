@@ -12,6 +12,8 @@ from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
 
 from ..minigrid import *
 
+from training import TaskDescriptor
+
 class RoomGBLA(Room):
     def __init__(
         self,
@@ -106,9 +108,15 @@ class KeyCorridorGBLA(RoomGrid):
 
         print("initialized GBLA Door Key Domain")
 
+    def genGoalDescriptor(self):
+        gd = GetGoalDescriptor(self)
+        self.taskD.goalDescriptor = gd
+ #       self.taskD.goalDescriptor = None
+        return gd
+
     def reset(self):
         obs = super().reset()
-        self.taskD.goalDescriptor = GetGoalDescriptor(self)
+        self.genGoalDescriptor()
         return obs
 
     def add_passage(self, room):
