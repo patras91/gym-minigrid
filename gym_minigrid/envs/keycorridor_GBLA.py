@@ -151,7 +151,6 @@ class KeyCorridorGBLA(RoomGrid):
 
     def _gen_grid(self, width, height):
         # Create the grid
-        print("in gen_grid")
 
         self.grid = Grid(width, height)
         self.grid.wall_rect(0, 0, width, height)
@@ -223,7 +222,6 @@ class KeyCorridorGBLA(RoomGrid):
         n_obj = 1
         if self.roomSize >= 3:
             while(len(self.obj) < n_obj):
-                print(self.obj)
                 locs = [(r,c) for r in range(self.num_rows) for c in range(self.num_cols)]
                 loc = choice(locs)
                 try:
@@ -231,7 +229,6 @@ class KeyCorridorGBLA(RoomGrid):
                     self.obj.append(obj)
                     # until we integrate with a planner, we need this info for the sub-goals in the goal descriptors
                     self.object_room = self.get_room(loc[1], loc[0])
-                    print(loc[1], loc[0], "added object in ", self.object_room)
                 except:
                     pass
 
@@ -329,7 +326,6 @@ class KeyCorridorGBLA(RoomGrid):
         self.mission = "" #"pick up the %s %s" % (obj.color, obj.type)
 
     def step(self, action):
-        print(self.goal_id)
         obs, reward, done, info = super().step(action)
 
         if self.goal_function(self, self.goal_value):   # evaluate the goal function passing the env (self) as the
