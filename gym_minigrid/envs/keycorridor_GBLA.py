@@ -62,6 +62,10 @@ class KeyCorridorGBLA(RoomGrid):
     def __init__(
         self,
         taskD,
+        goal_id,
+        goal_function,
+        goal_value,
+        goal_reward
     ):
         """
         This is the initialization function for the RoomDescriptor object.
@@ -69,10 +73,14 @@ class KeyCorridorGBLA(RoomGrid):
         @param taskD:
         """
         self.envDescriptor = np.array(taskD.envDescriptor)
-        self.goalDescriptor = taskD.goalDescriptor
         self.roomSize = taskD.roomSize
         self.roomDescriptor = taskD.roomDescriptor
         self.obj_type = "ball"
+
+        self.goal_id = goal_id
+        self.goal_function = goal_function
+        self.goal_value = goal_value
+        self.goal_reward = goal_reward
 
         self.roomID = {
             1: {
@@ -110,7 +118,7 @@ class KeyCorridorGBLA(RoomGrid):
         del(taskD)
         print("initialized GBLA Door Key Domain")
 
-    def genGoalDescriptor(self):
+    def set_goal_info(self, goal_function, goal_value, goal):
         gd = GetGoalDescriptor(self)
         self.goalDescriptor = gd
  #       self.goalDescriptor = None
@@ -118,7 +126,6 @@ class KeyCorridorGBLA(RoomGrid):
 
     def reset(self):
         obs = super().reset()
-        self.genGoalDescriptor()
         return obs
 
     def add_passage(self, room):
@@ -322,19 +329,14 @@ class KeyCorridorGBLA(RoomGrid):
         self.mission = "" #"pick up the %s %s" % (obj.color, obj.type)
 
     def step(self, action):
-        print(self.goalDescriptor.goalId)
+        print(self.goal_id)
         obs, reward, done, info = super().step(action)
 
-        if self.goal_function(self, self.goal_value) == True: reward = self.goal_reward
-
-        #reward = self.goalDescriptor.GetReward()
-
-        if reward == 1:
-            done = True
-        # if action == self.actions.pickup:
-        #     if self.carrying and self.carrying in self.obj:
-        #         reward = self._reward()
-        #         done = True
+        if self.goal_function(self, self.goal_value):   # evaluate the goal function passing the env (self) as the
+                                                        # arguments and the goal_value as the target value
+                                                        # (value = unused at this point)
+            reward = self.goal_reward
+            done = True                                 # if we meet the reward, end the episode
 
         return obs, reward, done, info
 

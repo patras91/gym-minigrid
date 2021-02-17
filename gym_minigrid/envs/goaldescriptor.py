@@ -31,30 +31,9 @@ def GetGoalDescriptor(env):
 
     dropOff_room = env.get_room(0,0) # temporary
 
-    def searchKey(env, v):
-        # the position the agent is facing
-        fwd_pos = env.front_pos
-
-        # Get the contents of the cell in front of the agent
-        fwd_cell = env.grid.get(*fwd_pos)
-
-        return fwd_cell and fwd_cell.type == "key"
-
-    def pickupKey(env, v):
-        return env.carrying and env.carrying.type == "key" 
-
     g_searchKey = GoalDescriptor('searchKey', (env), (), 1/12, func=searchKey)
     g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1/12, func=pickupKey)
     g_hasKey = GoalDescriptor('hasKey', (env), (), 1/6, func=pickupKey, refinement=(g_searchKey, g_pickupKey))
-
-    def openDoor(env, room):
-        for door in room.doors:
-            if door:
-                return door.is_open
-        return True
-
-    def goToRoom(env, room):
-        return room.pos_inside(*env.agent_pos)
 
     g_openDoor = GoalDescriptor('openDoor', (env), (env.object_room), 1/12, func=openDoor)
     g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1/12, func=goToRoom)
@@ -62,19 +41,7 @@ def GetGoalDescriptor(env):
 
     g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1/3, func=goToRoom, refinement=(g_hasKey, g_goToRoom1))
 
-    def pickupObj(env, v):
-        return env.carrying and env.carrying in env.obj
-
     g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1/3, func=pickupObj)
-
-    def putDown(env, v): # should not get reward for putdown if it has never picked up anything
-        return env.carrying == None
-
-    def dropOff(env, room):
-        for item in env.obj:
-            if not room.pos_inside(*item.cur_pos):
-                return False
-        return True
 
     g_goToRoom2 = GoalDescriptor('goToRoom', (env), (dropOff_room), 1/6, func=goToRoom)
     g_putDown = GoalDescriptor('putDown', (env), (), 1/6, func=putDown)
@@ -83,6 +50,43 @@ def GetGoalDescriptor(env):
     g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, func=dropOff, refinement=(g_getNear, g_pickupObj, g_deliver))
 
     return g_passDoor
+
+### NOTE: these functions have to be global in scope for multi-processing to work
+###       multi-processing requires pickling and pickling needs to recreate the function from a global reference
+
+def searchKey(env, v):
+    # the position the agent is facing
+    fwd_pos = env.front_pos
+
+    # Get the contents of the cell in front of the agent
+    fwd_cell = env.grid.get(*fwd_pos)
+
+    return fwd_cell and fwd_cell.type == "key"
+
+def pickupKey(env, v):
+    return env.carrying and env.carrying.type == "key"
+
+def openDoor(env, room):
+    for door in room.doors:
+        if door:
+            return door.is_open
+    return True
+
+def goToRoom(env, room):
+    return room.pos_inside(*env.agent_pos)
+
+def pickupObj(env, v):
+    return env.carrying and env.carrying in env.obj
+
+def putDown(env, v): # should not get reward for putdown if it has never picked up anything
+    return env.carrying == None
+
+def dropOff(env, room):
+    for item in env.obj:
+        if not room.pos_inside(*item.cur_pos):
+            return False
+    return True
+
 
 
 # Unit Tests
