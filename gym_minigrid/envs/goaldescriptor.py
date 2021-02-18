@@ -24,6 +24,11 @@ class GoalDescriptor():
                 r += item.GetReward()
             return r
 
+    def __repr__(self):             # modifying the __repr__ function so we know what goal it is from looking at it
+        s = super().__repr__()      # get the standard __repr__ results
+                                    # append the goalId to the beginning and return
+        return '<' + self.goalId + ' ' + s[1:]
+
 def GetGoalDescriptor(env): 
     '''
         Returns the goal hierarchy and rewards for the minigrid environment
@@ -49,7 +54,7 @@ def GetGoalDescriptor(env):
 
     g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, func=dropOff, refinement=(g_getNear, g_pickupObj, g_deliver))
 
-    return g_passDoor
+    return g_dropOff
 
 ### NOTE: these functions have to be global in scope for multi-processing to work
 ###       multi-processing requires pickling and pickling needs to recreate the function from a global reference
