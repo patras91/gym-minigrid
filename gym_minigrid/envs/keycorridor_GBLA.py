@@ -266,7 +266,9 @@ class KeyCorridorGBLA(RoomGrid):
     def step(self, action):
         obs, reward, done, info = super().step(action)
 
-        if self.goal_function(self, self.goal_value):   # evaluate the goal function passing the env (self) as the
+
+        if self.goal_function and \
+                self.goal_function(self, self.goal_value):   # evaluate the goal function passing the env (self) as the
                                                         # arguments and the goal_value as the target value
                                                         # (value = unused at this point)
             reward = self.goal_reward
