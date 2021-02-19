@@ -259,72 +259,6 @@ class KeyCorridorGBLA(RoomGrid):
                 except:
                     pass
 
-    def _gen_grid_old(self, width, height):
-        super()._gen_grid(width, height)
-
-        # Connect the outside rooms into a hallway by removing the walls
-        for i in range(0, self.num_rows):
-            for j in range(0, self.num_cols):
-                if (i == 0 or i == self.num_rows - 1) and j < self.num_cols - 1:
-                    self.remove_wall(j, i, 0)
-                if (j == 0 or j == self.num_cols - 1) and i < self.num_rows - 1:
-                    self.remove_wall(j, i, 1)
-
-
-        for room in ['delivery', 'keyVault']:
-            self.add_passage(room)
-
-        # Add doors/passages to every room  
-        # Add keys to locked doors
-        for room in range(6):
-
-            room_x = self.roomLoc[room][0]
-            room_y = self.roomLoc[room][1]
-
-            if self.roomLoc[room][0] == 1:
-                door_idx = 3 # top wall
-            else:
-                door_idx = 1 # bottom wall
-
-            addLock = self.roomDescriptor[room] >= 3
-            addDoor =  self.roomDescriptor[room] >= 2
-
-            if addDoor:
-                door, _ = self.add_door(room_y, room_x, door_idx, locked=addLock)
-
-                if addLock:
-                    if self.roomDescriptor[room] == self.enumRoomDescriptor.lockedWithKeyInHallway or self.roomSize == 3:
-                        # Add a key in a random room on the left side
-                        self.add_object(0, self._rand_int(0, self.num_rows), 'key', door.color)
-                    else:
-                        # place key in vault
-                        self.add_object(1, 2, 'key', door.color)
-            
-            if self.roomDescriptor[room] == self.enumRoomDescriptor.noDoor:
-                self.add_passage(room)
-
-        # Place the agent in the middle
-        self.place_agent(0, self.num_rows // 2)
-
-        # Add two object in the rooms
-        self.obj = []
-        #while(len(self.obj) < 3):
-        if self.roomSize >= 3:
-            loc = self._rand_int(0, 6)
-            assert any(rd > 0 for rd in self.roomDescriptor)      # make sure that at least one room is open
-            while self.roomDescriptor[loc] == 0:                  # while you have chosen a blocked room
-                loc = self._rand_int(0,6)                               # reroll the room location
-            obj, _ = self.add_object(self.roomLoc[loc][1], self.roomLoc[loc][0], kind=self.obj_type)
-            self.obj.append(obj)
-
-        else:
-            obj, _ = self.add_object(self._rand_int(1, self.num_cols), 0, kind=self.obj_type)
-            self.obj.append(obj)
-
-        # Make sure all rooms are accessible
-        #self.connect_all()
-        self.mission = "" #"pick up the %s %s" % (obj.color, obj.type)
-
     def step(self, action):
         obs, reward, done, info = super().step(action)
 
@@ -335,6 +269,25 @@ class KeyCorridorGBLA(RoomGrid):
             done = True                                 # if we meet the reward, end the episode
 
         return obs, reward, done, info
+
+    def get_state(self):
+        s = {}
+        s['agent_pos'] = self.agent_pos
+        s['agent_dir'] = self.agent_dir
+
+        s['grid'] = self.grid
+        s['room_grid'] = self.room_grid
+        s['obj'] = self.obj
+
+        return s
+
+    def set_state(self, s):
+        self.agent_pos = s['agent_pos']
+        self.agent_dir = s['agent_dir']
+
+        self.grid = s['grid']
+        self.room_grid = s['room_grid']
+        self.obj = s['obj']
 
 register(
     id='MiniGrid-KeyCorridorGBLA-v0',
