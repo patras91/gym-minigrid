@@ -82,6 +82,8 @@ class KeyCorridorGBLA(RoomGrid):
         self.goal_value = goal_value
         self.goal_reward = goal_reward
 
+        self.time = 0
+
         self.roomID = {
             1: {
                 1: 'delivery',
@@ -126,6 +128,8 @@ class KeyCorridorGBLA(RoomGrid):
 
     def reset(self):
         obs = super().reset()
+        self.time = 0
+        print('env reset')
         return obs
 
     def add_passage(self, room):
@@ -267,6 +271,8 @@ class KeyCorridorGBLA(RoomGrid):
                                                         # (value = unused at this point)
             reward = self.goal_reward
             done = True                                 # if we meet the reward, end the episode
+
+        self.time += 1
 
         return obs, reward, done, info
 
