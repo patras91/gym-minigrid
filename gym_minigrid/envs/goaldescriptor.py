@@ -36,21 +36,21 @@ def GetGoalDescriptor(env):
 
     dropOff_room = env.get_room(0,0) # temporary
 
-    g_searchKey = GoalDescriptor('searchKey', (env), (), 1/12, func=searchKey)
-    g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1/12, func=pickupKey)
-    g_hasKey = GoalDescriptor('hasKey', (env), (), 1/6, func=pickupKey, refinement=(g_searchKey, g_pickupKey))
+    g_searchKey = GoalDescriptor('searchKey', (env), (), 1, func=searchKey)
+    g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1, func=pickupKey)
+    g_hasKey = GoalDescriptor('hasKey', (env), (), 1, func=pickupKey, refinement=(g_searchKey, g_pickupKey))
 
-    g_openDoor = GoalDescriptor('openDoor', (env), (env.object_room), 1/12, func=openDoor)
-    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1/12, func=goToRoom)
-    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1/6, func=goToRoom, refinement=(g_openDoor, g_passDoor))
+    g_openDoor = GoalDescriptor('openDoor', (env), (env.object_room), 1, func=openDoor)
+    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, func=goToRoom)
+    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, func=goToRoom, refinement=(g_openDoor, g_passDoor))
 
-    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1/3, func=goToRoom, refinement=(g_hasKey, g_goToRoom1))
+    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, func=goToRoom, refinement=(g_hasKey, g_goToRoom1))
 
-    g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1/3, func=pickupObj)
+    g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, func=pickupObj)
 
-    g_goToRoom2 = GoalDescriptor('goToRoom', (env), (dropOff_room), 1/6, func=goToRoom)
-    g_putDown = GoalDescriptor('putDown', (env), (), 1/6, func=putDown)
-    g_deliver = GoalDescriptor('deliver', (env), (dropOff_room), 1/3, func=dropOff, refinement=(g_goToRoom2, g_putDown))
+    g_goToRoom2 = GoalDescriptor('goToRoom', (env), (dropOff_room), 1, func=goToRoom)
+    g_putDown = GoalDescriptor('putDown', (env), (), 1, func=putDown)
+    g_deliver = GoalDescriptor('deliver', (env), (dropOff_room), 1, func=dropOff, refinement=(g_goToRoom2, g_putDown))
 
     g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, func=dropOff, refinement=(g_getNear, g_pickupObj, g_deliver))
 
