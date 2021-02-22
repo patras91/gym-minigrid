@@ -12,8 +12,6 @@ from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
 
 from ..minigrid import *
 
-from training import TaskDescriptor
-
 class RoomGBLA(Room):
     def __init__(
         self,

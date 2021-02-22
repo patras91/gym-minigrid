@@ -104,7 +104,7 @@ class p():
     def __init__(self):
         pass
 
-tD = TaskDescriptor()
+tD = p()
 # 341, 681, and 1021
 tD.envDescriptor = np.array([[0,0,0,0,0],
                     [0,341,0,0,0],
@@ -136,7 +136,9 @@ tD.roomOrdering = [1,1,1,1,1,1] # to discuss
 tD.observability = 1  # partially observable
 tD.seed = 11
 
-env = gym.make(args.env, taskD=tD)
+env = gym.make(args.env, taskD=tD,
+               goal_id=None, goal_function=None,
+               goal_value=None, goal_reward=None)
 
 if args.agent_view:
     env = RGBImgPartialObsWrapper(env)
