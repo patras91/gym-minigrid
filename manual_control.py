@@ -134,7 +134,7 @@ tD.roomDescriptor = [1,0,0,0,0,0]
 tD.roomSize = 4 # can't be less than 3
 tD.roomOrdering = [1,1,1,1,1,1] # to discuss
 tD.observability = 1  # partially observable
-tD.seed = 11
+tD.seed = np.random.randint(0,100)   # previously 11
 
 env = gym.make(args.env, taskD=tD,
                goal_id=None, goal_function=None,

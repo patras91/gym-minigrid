@@ -224,7 +224,8 @@ class KeyCorridorGBLA(RoomGrid):
         n_obj = 1
         if self.roomSize >= 3:
             while(len(self.obj) < n_obj):
-                locs = [(r,c) for r in range(self.num_rows) for c in range(self.num_cols)]
+                locs = [(r,c) for r in range(self.num_rows) for c in range(self.num_cols)
+                        if self.room_grid[r][c].type>0]
                 loc = choice(locs)
                 try:
                     obj, _ = self.add_object(loc[1], loc[0], kind=self.obj_type)
@@ -255,8 +256,11 @@ class KeyCorridorGBLA(RoomGrid):
             n = 0
             while n<100:
                 n+=1
+                locs = [(r, c) for r in range(self.num_rows) for c in range(self.num_cols)
+                        if self.room_grid[r][c].type == 0]
+                loc = choice(locs)
                 try:
-                    self.add_object(self._rand_int(0, self.num_cols), self._rand_int(0, self.num_rows), 'key', doorColor)
+                    self.add_object(*loc, 'key', doorColor)
                     n+=100
                 except:
                     pass
