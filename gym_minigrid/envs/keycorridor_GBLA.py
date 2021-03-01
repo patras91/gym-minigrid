@@ -12,6 +12,8 @@ from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
 
 from ..minigrid import *
 
+from copy import deepcopy
+
 class RoomGBLA(Room):
     def __init__(
         self,
@@ -81,6 +83,7 @@ class KeyCorridorGBLA(RoomGrid):
         self.goal_reward = goal_reward
 
         self.time = 0
+        self.termination_set = []
 
         self.roomID = {
             1: {
@@ -268,6 +271,7 @@ class KeyCorridorGBLA(RoomGrid):
     def step(self, action):
         obs, reward, done, info = super().step(action)
 
+        self.time += 1
 
         if self.goal_function and \
                 self.goal_function(self, self.goal_value):   # evaluate the goal function passing the env (self) as the
@@ -275,29 +279,53 @@ class KeyCorridorGBLA(RoomGrid):
                                                         # (value = unused at this point)
             reward = self.goal_reward
             done = True                                 # if we meet the reward, end the episode
+            self.save_termination_set()
+        elif self.goal_id == 'openDoor' and not (self.carrying and self.carrying.type == "key"):
+            reward = 0
+            done = True
 
-        self.time += 1
+        bad_states = [len([k for k in s['grid'].grid + [s['carrying']] if k and k.type == "key"])!=1
+                for s in self.termination_set]
+        if any(bad_states):
+            print('wtf')
+
+#        if len([k for k in self.grid.grid + [self.carrying] if k and k.type == "key"])!=1:
+#            print('wtf')
 
         return obs, reward, done, info
 
+    def save_termination_set(self):
+        s = self.get_state()
+        self.termination_set.append(s)
+        print('reward - termination set size = {}'
+              .format(len(self.termination_set)))
+
     def get_state(self):
         s = {}
-        s['agent_pos'] = self.agent_pos
-        s['agent_dir'] = self.agent_dir
+        s['carrying'] = deepcopy(self.carrying)
+        s['agent_pos'] = deepcopy(self.agent_pos)
+        s['agent_dir'] = deepcopy(self.agent_dir)
 
-        s['grid'] = self.grid
-        s['room_grid'] = self.room_grid
-        s['obj'] = self.obj
+        s['grid'] = deepcopy(self.grid)
+        s['room_grid'] = deepcopy(self.room_grid)
+        s['obj'] = deepcopy(self.obj)
+
+        if len([k for k in s['grid'].grid + [s['carrying']] if k and k.type == "key"])!=1:
+            print('wtf')
 
         return s
 
     def set_state(self, s):
+        self.carrying = s['carrying']
         self.agent_pos = s['agent_pos']
         self.agent_dir = s['agent_dir']
 
         self.grid = s['grid']
         self.room_grid = s['room_grid']
         self.obj = s['obj']
+
+        if len([k for k in self.grid.grid + [self.carrying] if k and k.type == "key"])!=1:
+            print('wtf')
 
 register(
     id='MiniGrid-KeyCorridorGBLA-v0',

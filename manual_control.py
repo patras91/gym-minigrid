@@ -7,7 +7,7 @@ import gym
 import gym_minigrid
 from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
-#from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
+import gym_minigrid.envs.goaldescriptor
 
 def redraw(img):
     if not args.agent_view:
@@ -138,7 +138,16 @@ tD.seed = np.random.randint(0,100)   # previously 11
 
 env = gym.make(args.env, taskD=tD,
                goal_id=None, goal_function=None,
-               goal_value=None, goal_reward=None)
+               goal_value=None, goal_reward=1)
+
+gd = gym_minigrid.envs.goaldescriptor.GetGoalDescriptor(env)
+
+g = gd.refinement[0].refinement[1].refinement[0]        # findRoom goal
+
+env = gym.make(args.env, taskD=tD,
+               goal_id=g.goalId, goal_function=g.achieved,
+               goal_value=g.goalValue, goal_reward=1)
+
 
 if args.agent_view:
     env = RGBImgPartialObsWrapper(env)

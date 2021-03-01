@@ -1,5 +1,7 @@
 __author__ = "patras"
 
+import numpy as np
+
 class GoalDescriptor():
     def __init__(self, gid, params, value, r, func=None, refinement=None):
         self.goalId = gid
@@ -40,9 +42,9 @@ def GetGoalDescriptor(env):
     g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1, func=pickupKey)
     g_hasKey = GoalDescriptor('hasKey', (env), (), 1, func=pickupKey, refinement=(g_searchKey, g_pickupKey))
 
-    g_openDoor = GoalDescriptor('openDoor', (env), (env.object_room), 1, func=openDoor)
+    g_findDoor = GoalDescriptor('findDoor', (env), (env.object_room), 1, func=findDoor)
     g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, func=goToRoom)
-    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, func=goToRoom, refinement=(g_openDoor, g_passDoor))
+    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, func=goToRoom, refinement=(g_findDoor, g_passDoor))
 
     g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, func=goToRoom, refinement=(g_hasKey, g_goToRoom1))
 
@@ -71,10 +73,10 @@ def searchKey(env, v):
 def pickupKey(env, v):
     return env.carrying and env.carrying.type == "key"
 
-def openDoor(env, room):
+def findDoor(env, room):
     for door in room.doors:
         if door:
-            return door.is_open
+            return sum(np.abs(np.array(door.cur_pos)-env.agent_pos))<=1
     return True
 
 def goToRoom(env, room):
