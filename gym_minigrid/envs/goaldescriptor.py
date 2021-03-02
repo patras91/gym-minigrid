@@ -83,7 +83,9 @@ def goToRoom(env, room):
     return room.pos_inside(*env.agent_pos)
 
 def pickupObj(env, v):
-    return env.carrying and env.carrying in env.obj
+    return env.carrying and \
+           [(o.type == env.carrying.type) and
+            (o.color == env.carrying.color) for o in env.obj]
 
 def putDown(env, v): # should not get reward for putdown if it has never picked up anything
     return env.carrying == None

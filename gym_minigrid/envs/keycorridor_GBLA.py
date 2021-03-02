@@ -14,6 +14,9 @@ from ..minigrid import *
 
 from copy import deepcopy
 
+import matplotlib.pyplot as plt                         # import matplotlib for plotting
+
+
 class RoomGBLA(Room):
     def __init__(
         self,
@@ -283,6 +286,10 @@ class KeyCorridorGBLA(RoomGrid):
         elif self.goal_id == 'openDoor' and not (self.carrying and self.carrying.type == "key"):
             reward = 0
             done = True
+
+        if self.goal_id in ['passDoor','pickupObj']:
+            self.render()
+            plt.gcf().canvas.set_window_title('goal = {}'.format(self.goal_id))
 
         return obs, reward, done, info
 
