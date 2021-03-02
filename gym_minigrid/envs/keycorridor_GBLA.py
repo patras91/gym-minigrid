@@ -283,19 +283,6 @@ class KeyCorridorGBLA(RoomGrid):
         elif self.goal_id == 'openDoor' and not (self.carrying and self.carrying.type == "key"):
             reward = 0
             done = True
-        elif self.goal_id == 'putDown' and not (self.carrying and self.carrying.type == "ball"):
-            # if we get here without the ball and the goal_function isn't satisfied
-            # we have inadvertently dropped the ball
-            reward = 0
-            done = True
-
-#        bad_states = [len([k for k in s['grid'].grid + [s['carrying']] if k and k.type == "key"])!=1
-#                for s in self.termination_set]
-#        if any(bad_states):
-#            print('wtf')
-
-#        if len([k for k in self.grid.grid + [self.carrying] if k and k.type == "key"])!=1:
-#            print('wtf')
 
         return obs, reward, done, info
 
