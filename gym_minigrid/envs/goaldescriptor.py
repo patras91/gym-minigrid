@@ -117,8 +117,8 @@ def f_hasBall(env):
 
 def a_pickupObj(env, v):
     return env.carrying and \
-           [(o.type == env.carrying.type) and
-            (o.color == env.carrying.color) for o in env.obj]
+           any([(o.type == env.carrying.type) and
+            (o.color == env.carrying.color) for o in env.obj])
 
 ##### putDown goal #####
 

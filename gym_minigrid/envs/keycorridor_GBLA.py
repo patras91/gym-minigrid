@@ -293,6 +293,7 @@ class KeyCorridorGBLA(RoomGrid):
 
             reward = -1
             done = True
+            print('failure')
 
         if self.goal_id in []:
             self.render()
