@@ -3,13 +3,14 @@ __author__ = "patras"
 import numpy as np
 
 class GoalDescriptor():
-    def __init__(self, gid, params, value, r, func=None, refinement=None):
+    def __init__(self, gid, params, value, r, achieved_func=None, failure_func=None, refinement=None):
         self.goalId = gid
         self.goalArgs = params # params include arguments and values
         self.goalValue = value
         self.reward = r
         self.refinement = refinement
-        self.achieved = func
+        self.achieved = achieved_func
+        self.failure = failure_func
 
     def GetReward(self):
         if self.achieved == None:
@@ -38,30 +39,32 @@ def GetGoalDescriptor(env):
 
     dropOff_room = env.get_room(0,0) # temporary
 
-    g_searchKey = GoalDescriptor('searchKey', (env), (), 1, func=searchKey)
-    g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1, func=pickupKey)
-    g_hasKey = GoalDescriptor('hasKey', (env), (), 1, func=pickupKey, refinement=(g_searchKey, g_pickupKey))
+    g_searchKey = GoalDescriptor('searchKey', (env), (), 1, achieved_func=a_searchKey)
+    g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1, achieved_func=a_pickupKey, failure_func=f_pickupKey)
+    g_hasKey = GoalDescriptor('hasKey', (env), (), 1, achieved_func=a_pickupKey, refinement=(g_searchKey, g_pickupKey))
 
-    g_findDoor = GoalDescriptor('findDoor', (env), (env.object_room), 1, func=findDoor)
-    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, func=goToRoom)
-    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, func=goToRoom, refinement=(g_findDoor, g_passDoor))
+    g_findDoor = GoalDescriptor('findDoor', (env), (env.object_room), 1, achieved_func=a_findDoor, failure_func=f_hasKey)
+    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, achieved_func=a_goToRoom, failure_func=f_passDoor)
+    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, achieved_func=a_goToRoom, refinement=(g_findDoor, g_passDoor))
 
-    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, func=goToRoom, refinement=(g_hasKey, g_goToRoom1))
+    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, achieved_func=a_goToRoom, refinement=(g_hasKey, g_goToRoom1))
 
-    g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, func=pickupObj)
+    g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, achieved_func=a_pickupObj)
 
-    g_goToRoom2 = GoalDescriptor('goToRoom', (env), (dropOff_room), 1, func=goToRoom)
-    g_putDown = GoalDescriptor('putDown', (env), (), 1, func=putDown)
-    g_deliver = GoalDescriptor('deliver', (env), (dropOff_room), 1, func=dropOff, refinement=(g_goToRoom2, g_putDown))
+    g_goToRoom2 = GoalDescriptor('goToRoom', (env), (dropOff_room), 1, achieved_func=a_goToRoom, failure_func=f_hasBall)
+    g_putDown = GoalDescriptor('putDown', (env), (), 1, achieved_func=a_putDown)
+    g_deliver = GoalDescriptor('deliver', (env), (dropOff_room), 1, achieved_func=a_dropOff, refinement=(g_goToRoom2, g_putDown))
 
-    g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, func=dropOff, refinement=(g_getNear, g_pickupObj, g_deliver))
+    g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, achieved_func=a_dropOff, refinement=(g_getNear, g_pickupObj, g_deliver))
 
     return g_dropOff
 
 ### NOTE: these functions have to be global in scope for multi-processing to work
 ###       multi-processing requires pickling and pickling needs to recreate the function from a global reference
 
-def searchKey(env, v):
+##### searchKey goal #####
+
+def a_searchKey(env, v):
     # the position the agent is facing
     fwd_pos = env.front_pos
 
@@ -70,27 +73,59 @@ def searchKey(env, v):
 
     return fwd_cell and fwd_cell.type == "key"
 
-def pickupKey(env, v):
+##### pickupKey goal #####
+
+def a_pickupKey(env, v):
     return env.carrying and env.carrying.type == "key"
 
-def findDoor(env, room):
+def f_pickupKey(env):
+    xs = [-1,0,1]
+    obj_sur = [env.grid.get(env.agent_pos[0]+dx,env.agent_pos[0]+dy)
+                            for dx in xs for dy in xs if dx != dy]
+    return all([o.type != "key" for o in obj_sur if o])
+
+##### passDoor goal #####
+
+def f_passDoor(env, room):
+    for door in room.doors:
+        if door:
+            return max(np.abs(np.array(door.cur_pos)-env.agent_pos))>1
+    return False
+
+##### findDoor goal #####
+
+def a_findDoor(env, room):
     for door in room.doors:
         if door:
             return sum(np.abs(np.array(door.cur_pos)-env.agent_pos))<=1
     return True
 
-def goToRoom(env, room):
+def f_hasKey(env):
+    return not (env.carrying and env.carrying.type == "key")
+
+##### goToRoom goal #####
+
+def a_goToRoom(env, room):
     return room.pos_inside(*env.agent_pos)
 
-def pickupObj(env, v):
+def f_hasBall(env):
+    return not (env.carrying and env.carrying.type == "ball")
+
+##### pickupObj goal #####
+
+def a_pickupObj(env, v):
     return env.carrying and \
            [(o.type == env.carrying.type) and
             (o.color == env.carrying.color) for o in env.obj]
 
-def putDown(env, v): # should not get reward for putdown if it has never picked up anything
+##### putDown goal #####
+
+def a_putDown(env, v): # should not get reward for putdown if it has never picked up anything
     return env.carrying == None
 
-def dropOff(env, room):
+##### dropOff goal #####
+
+def a_dropOff(env, room):
     for item in env.obj:
         if not room.pos_inside(*item.cur_pos):
             return False
@@ -100,7 +135,7 @@ def dropOff(env, room):
 
 # Unit Tests
 
-# g = GoalDescriptor('dropOff', ('o', 'l'), 10, func=dropOff, refinement=(gGetKey, gFindObj, gDeliver))
+# g = GoalDescriptor('dropOff', ('o', 'l'), 10, achieved_func=dropOff, refinement=(gGetKey, gFindObj, gDeliver))
 
 # print("Reward for DropOff: ", g.GetReward(s))
 
@@ -112,7 +147,7 @@ def dropOff(env, room):
 # def hasKey(s):
 #     return s.loc['key'] == 'r1'
 
-# gGetKey = GoalDescriptor('getKey', ('k'), 3, func=hasKey) # no refinement
+# gGetKey = GoalDescriptor('getKey', ('k'), 3, achieved_func=hasKey) # no refinement
 
 # s = KeyCorridor() # a placeholder for Unit Testing
 # print("Reward for GetKey: ", gGetKey.GetReward(s))
@@ -120,22 +155,22 @@ def dropOff(env, room):
 # def search(s):
 #     return s.loc['o'] != "UNK"
 
-# gSearch = GoalDescriptor('search', ('r', 'o'), 4, func=search) # no refinement
+# gSearch = GoalDescriptor('search', ('r', 'o'), 4, achieved_func=search) # no refinement
 # print("Reward for Search: ", gSearch.GetReward(s))
 
 # def collect(s):
 #     return s.pos['o'] == "r1"
 
-# gCollect = GoalDescriptor('search', ('r', 'o'), 4, func=collect) # no refinement
+# gCollect = GoalDescriptor('search', ('r', 'o'), 4, achieved_func=collect) # no refinement
 # print("Reward for Collect: ", gSearch.GetReward(s))
 
-# gFindObj = GoalDescriptor('findObj', ('o'), 5, func=collect, refinement=(gSearch, gCollect)) 
+# gFindObj = GoalDescriptor('findObj', ('o'), 5, achieved_func=collect, refinement=(gSearch, gCollect))
 # print("Reward for Find: ", gFindObj.GetReward(s))
 
 # def dropOff(s):
 #     return s.loc['o'] == 'dropOffRoom'
 
-# gDeliver = GoalDescriptor('deliver', ('o'), 2, func=dropOff)  # no refinement
+# gDeliver = GoalDescriptor('deliver', ('o'), 2, achieved_func=dropOff)  # no refinement
 # print("Reward for deliver: ", gDeliver.GetReward(s))
 
 

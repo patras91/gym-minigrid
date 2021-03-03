@@ -68,7 +68,8 @@ class KeyCorridorGBLA(RoomGrid):
         goal_id,
         goal_function,
         goal_value,
-        goal_reward
+        goal_reward,
+        failure_function
     ):
         """
         This is the initialization function for the RoomDescriptor object.
@@ -84,6 +85,7 @@ class KeyCorridorGBLA(RoomGrid):
         self.goal_function = goal_function
         self.goal_value = goal_value
         self.goal_reward = goal_reward
+        self.failure_function = failure_function
 
         self.time = 0
         self.termination_set = []
@@ -283,7 +285,10 @@ class KeyCorridorGBLA(RoomGrid):
             reward = self.goal_reward
             done = True                                 # if we meet the reward, end the episode
             self.save_termination_set()
-        elif self.goal_id == 'openDoor' and not (self.carrying and self.carrying.type == "key"):
+        elif self.time > 1 and \
+             self.failure_function and \
+             self.failure_function(self):               # the env may not have been reset yet, so wait for t>1
+
             reward = 0
             done = True
 
