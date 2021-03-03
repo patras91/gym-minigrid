@@ -79,18 +79,20 @@ def a_pickupKey(env, v):
     return env.carrying and env.carrying.type == "key"
 
 def f_pickupKey(env):
-    xs = [-1,0,1]
-    obj_sur = [env.grid.get(env.agent_pos[0]+dx,env.agent_pos[0]+dy)
-                            for dx in xs for dy in xs if dx != dy]
-    return all([o.type != "key" for o in obj_sur if o])
+    ds = [-1,0,1]
+    obj_sur = [env.grid.get(env.agent_pos[0]+dx,env.agent_pos[1]+dy)
+                            for dx in ds for dy in ds
+                            if not (dx == 0 and dy == 0)]
+    return all([o.type != "key" if o else True  for o in obj_sur])
 
 ##### passDoor goal #####
 
-def f_passDoor(env, room):
-    for door in room.doors:
-        if door:
-            return max(np.abs(np.array(door.cur_pos)-env.agent_pos))>1
-    return False
+def f_passDoor(env):
+    ds = [-1,0,1]
+    obj_sur = [env.grid.get(env.agent_pos[0]+dx,env.agent_pos[1]+dy)
+                            for dx in ds for dy in ds
+                            if not (dx == 0 and dy == 0)]
+    return all([o.type != "door" if o else True  for o in obj_sur])
 
 ##### findDoor goal #####
 

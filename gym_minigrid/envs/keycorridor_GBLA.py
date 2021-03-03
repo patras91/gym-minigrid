@@ -88,6 +88,7 @@ class KeyCorridorGBLA(RoomGrid):
         self.failure_function = failure_function
 
         self.time = 0
+        self.advanced = False
         self.termination_set = []
 
         self.roomID = {
@@ -135,6 +136,7 @@ class KeyCorridorGBLA(RoomGrid):
     def reset(self):
         obs = super().reset()
         self.time = 0
+        self.advanced = False
         print('env reset')
         return obs
 
@@ -285,14 +287,14 @@ class KeyCorridorGBLA(RoomGrid):
             reward = self.goal_reward
             done = True                                 # if we meet the reward, end the episode
             self.save_termination_set()
-        elif self.time > 1 and \
+        elif self.advanced and \
              self.failure_function and \
              self.failure_function(self):               # the env may not have been reset yet, so wait for t>1
 
-            reward = 0
+            reward = -1
             done = True
 
-        if self.goal_id in ['passDoor','pickupObj']:
+        if self.goal_id in []:
             self.render()
             plt.gcf().canvas.set_window_title('goal = {}'.format(self.goal_id))
 
@@ -327,6 +329,8 @@ class KeyCorridorGBLA(RoomGrid):
         self.grid = s['grid']
         self.room_grid = s['room_grid']
         self.obj = s['obj']
+
+        self.advanced = True                # set a flag to notify that the env has been advanced
 
 #        if len([k for k in self.grid.grid + [self.carrying] if k and k.type == "key"])!=1:
 #            print('wtf')
