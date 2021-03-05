@@ -49,7 +49,7 @@ def GetGoalDescriptor(env):
 
     g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, achieved_func=a_goToRoom, refinement=(g_hasKey, g_goToRoom1))
 
-    g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, achieved_func=a_pickupObj)
+    g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, achieved_func=a_pickupObj, failure_func=f_pickupObj)
 
     g_goToRoom2 = GoalDescriptor('goToRoom', (env), (dropOff_room), 1, achieved_func=a_goToRoom, failure_func=f_hasBall)
     g_putDown = GoalDescriptor('putDown', (env), (), 1, achieved_func=a_putDown)
@@ -125,6 +125,9 @@ def a_pickupObj(env, v):
     return env.carrying and \
            any([(o.type == env.carrying.type) and
             (o.color == env.carrying.color) for o in env.obj])
+
+def f_pickupObj(env):
+    return not env.object_room.pos_inside(*env.agent_pos)
 
 ##### putDown goal #####
 
