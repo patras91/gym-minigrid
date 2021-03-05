@@ -92,7 +92,13 @@ def f_passDoor(env):
     obj_sur = [env.grid.get(env.agent_pos[0]+dx,env.agent_pos[1]+dy)
                             for dx in ds for dy in ds
                             if not (dx == 0 and dy == 0)]
-    return all([o.type != "door" if o else True  for o in obj_sur])
+    doors = [o for o in obj_sur if o and o.type == "door"]
+
+    if doors:
+        return doors[0].is_locked and not (env.carrying and env.carrying.type=="key")
+    else:
+        return True
+    return
 
 ##### findDoor goal #####
 
