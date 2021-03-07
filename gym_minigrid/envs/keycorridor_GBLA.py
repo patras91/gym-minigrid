@@ -89,6 +89,7 @@ class KeyCorridorGBLA(RoomGrid):
 
         self.time = 0
         self.advanced = False
+        self.initiation_set = []
         self.termination_set = []
 
         self.roomID = {
@@ -137,7 +138,16 @@ class KeyCorridorGBLA(RoomGrid):
         obs = super().reset()
         self.time = 0
         self.advanced = False
-        print('env reset')
+
+        if self.initiation_set:
+            state = choice(self.initiation_set)  # choose a random state from the termination set
+
+            self.set_state(deepcopy(state))
+            self.advanced = True
+            print('{} - successfully advanced after reset'.format(self.goal_id))
+        else:
+            print('{} - no initiation set, skipping reset'.format(self.goal_id))
+
         return obs
 
     def add_passage(self, room):
@@ -317,9 +327,6 @@ class KeyCorridorGBLA(RoomGrid):
         s['room_grid'] = deepcopy(self.room_grid)
         s['obj'] = deepcopy(self.obj)
 
-#        if len([k for k in s['grid'].grid + [s['carrying']] if k and k.type == "key"])!=1:
-#            print('wtf')
-
         return s
 
     def set_state(self, s):
@@ -335,6 +342,10 @@ class KeyCorridorGBLA(RoomGrid):
 
 #        if len([k for k in self.grid.grid + [self.carrying] if k and k.type == "key"])!=1:
 #            print('wtf')
+
+    def set_initiation_set(self, init_set):
+        print('setting initiation set')
+        self.initiation_set = init_set
 
 register(
     id='MiniGrid-KeyCorridorGBLA-v0',
