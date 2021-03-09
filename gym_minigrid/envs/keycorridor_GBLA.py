@@ -145,6 +145,7 @@ class KeyCorridorGBLA(RoomGrid):
             self.set_state(deepcopy(state))
             self.advanced = True
             print('{} - successfully advanced after reset'.format(self.goal_id))
+            assert self.get_state() in self.initiation_set
         else:
             print('{} - no initiation set, skipping reset'.format(self.goal_id))
 
