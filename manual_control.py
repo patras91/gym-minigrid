@@ -9,6 +9,8 @@ from gym_minigrid.wrappers import *
 from gym_minigrid.window import Window
 import gym_minigrid.envs.goaldescriptor
 
+from training import GoalRL
+
 def redraw(img):
     if not args.agent_view:
         img = env.render('rgb_array', tile_size=args.tile_size)
@@ -136,19 +138,23 @@ tD.roomOrdering = [1,1,1,1,1,1] # to discuss
 tD.observability = 1  # partially observable
 tD.seed = np.random.randint(0,100)   # previously 11
 
-env = gym.make(args.env, taskD=tD,
-               goal_id=None, goal_function=None,
-               goal_value=None, goal_reward=1)
+env = gym.make(args.env, taskD=tD)
 
-#gd = gym_minigrid.envs.goaldescriptor.GetGoalDescriptor(env)
+gd = gym_minigrid.envs.goaldescriptor.GetGoalDescriptor(env)
 
-#g = gd.refinement[0].refinement[1].refinement[1]        # findRoom goal = [0][1][0]
-                                                        # enterRoom goal = [0][1][1]
+g = gd.refinement[0].refinement[1].refinement[0]
+# searchKey goal = [0][0][0]
+# pickupKey goal = [0][0][1]
+# findRoom goal = [0][1][0]
+# passDoor goal = [0][1][1]
+# pickupObj goal = [0][1]
+# enterRoom goal = [0][2][0]
+# findRoom goal = [0][2][1]
 
-#env = gym.make(args.env, taskD=tD,
-#               goal_id=g.goalId, goal_function=g.achieved,
-#               goal_value=g.goalValue, goal_reward=1)
-
+env = GoalRL.GoalEnvWrapper(env,
+               goal_id=g.goalId, goal_function=g.achieved,
+               goal_value=g.goalValue, goal_reward=1,
+               failure_function=None)
 
 if args.agent_view:
     env = RGBImgPartialObsWrapper(env)
