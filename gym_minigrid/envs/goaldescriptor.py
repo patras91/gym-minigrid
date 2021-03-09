@@ -51,7 +51,7 @@ def GetGoalDescriptor(env):
 
     g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, achieved_func=a_pickupObj, failure_func=f_pickupObj)
 
-    g_goToRoom2 = GoalDescriptor('goToRoom', (env), (dropOff_room), 1, achieved_func=a_goToRoom, failure_func=f_hasBall)
+    g_goToRoom2 = GoalDescriptor('goToDropoff', (env), (dropOff_room), 1, achieved_func=a_goToDropoff, failure_func=f_hasBall)
     g_putDown = GoalDescriptor('putDown', (env), (), 1, achieved_func=a_putDown)
     g_deliver = GoalDescriptor('deliver', (env), (dropOff_room), 1, achieved_func=a_dropOff, refinement=(g_goToRoom2, g_putDown))
 
@@ -102,8 +102,8 @@ def f_passDoor(env):
 
 ##### findDoor goal #####
 
-def a_findDoor(env, room):
-    for door in room.doors:
+def a_findDoor(env, v):
+    for door in env.object_room.doors:
         if door:
             return sum(np.abs(np.array(door.cur_pos)-env.agent_pos))<=1
     return True
@@ -113,8 +113,8 @@ def f_hasKey(env):
 
 ##### goToRoom goal #####
 
-def a_goToRoom(env, room):
-    return room.pos_inside(*env.agent_pos)
+def a_goToDropoff(env, v):
+    return env.get_room(0,0).pos_inside(*env.agent_pos)
 
 def f_hasBall(env):
     return not (env.carrying and env.carrying.type == "ball")
