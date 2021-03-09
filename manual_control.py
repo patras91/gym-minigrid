@@ -142,14 +142,14 @@ env = gym.make(args.env, taskD=tD)
 
 gd = gym_minigrid.envs.goaldescriptor.GetGoalDescriptor(env)
 
-g = gd.refinement[0].refinement[1].refinement[1]
+g = gd.refinement[2].refinement[1]#.refinement[1]
 # searchKey goal = [0][0][0]
 # pickupKey goal = [0][0][1]
 # findDoor goal = [0][1][0]
 # passDoor goal = [0][1][1]
-# pickupObj goal = [0][1]
-# enterRoom goal = [0][2][0]
-# findRoom goal = [0][2][1]
+# pickupObj goal = [1]
+# enterRoom goal = [2][0]
+# findRoom goal = [2][1]
 
 env = GoalRL.GoalEnvWrapper(env,
                goal_id=g.goalId, goal_function=g.achieved,

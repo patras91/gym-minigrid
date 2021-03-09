@@ -44,10 +44,10 @@ def GetGoalDescriptor(env):
     g_hasKey = GoalDescriptor('hasKey', (env), (), 1, achieved_func=a_pickupKey, refinement=(g_searchKey, g_pickupKey))
 
     g_findDoor = GoalDescriptor('findDoor', (env), (env.object_room), 1, achieved_func=a_findDoor, failure_func=f_hasKey)
-    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, achieved_func=a_goToRoom, failure_func=f_passDoor)
-    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, achieved_func=a_goToRoom, refinement=(g_findDoor, g_passDoor))
+    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, failure_func=f_passDoor)
+    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, refinement=(g_findDoor, g_passDoor))
 
-    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, achieved_func=a_goToRoom, refinement=(g_hasKey, g_goToRoom1))
+    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, refinement=(g_hasKey, g_goToRoom1))
 
     g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, achieved_func=a_pickupObj, failure_func=f_pickupObj)
 
@@ -86,6 +86,9 @@ def f_pickupKey(env):
     return all([o.type != "key" if o else True  for o in obj_sur])
 
 ##### passDoor goal #####
+
+def a_goToObjectRoom(env, v):
+    return env.object_room.pos_inside(*env.agent_pos)
 
 def f_passDoor(env):
     ds = [-1,0,1]
