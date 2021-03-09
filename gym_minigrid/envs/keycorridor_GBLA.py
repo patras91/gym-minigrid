@@ -7,12 +7,11 @@ __authors__="sunandita, mark"
 from gym_minigrid.roomgrid import RoomGrid, Room
 from gym_minigrid.register import register
 from enum import IntEnum
-from random import choice
 from gym_minigrid.envs.goaldescriptor import GetGoalDescriptor
 
 from ..minigrid import *
 
-from copy import deepcopy
+from random import choice
 
 import matplotlib.pyplot as plt                         # import matplotlib for plotting
 
@@ -64,12 +63,7 @@ class KeyCorridorGBLA(RoomGrid):
 
     def __init__(
         self,
-        taskD,
-        goal_id,
-        goal_function,
-        goal_value,
-        goal_reward,
-        failure_function
+        taskD
     ):
         """
         This is the initialization function for the RoomDescriptor object.
@@ -80,17 +74,6 @@ class KeyCorridorGBLA(RoomGrid):
         self.roomSize = taskD.roomSize
         self.roomDescriptor = taskD.roomDescriptor
         self.obj_type = "ball"
-
-        self.goal_id = goal_id
-        self.goal_function = goal_function
-        self.goal_value = goal_value
-        self.goal_reward = goal_reward
-        self.failure_function = failure_function
-
-        self.time = 0
-        self.advanced = False
-        self.initiation_set = []
-        self.termination_set = []
 
         self.roomID = {
             1: {
@@ -135,21 +118,7 @@ class KeyCorridorGBLA(RoomGrid):
         return None
 
     def reset(self):
-        obs = super().reset()
-        self.time = 0
-        self.advanced = False
-
-        if self.initiation_set:
-            state = choice(self.initiation_set)  # choose a random state from the termination set
-
-            self.set_state(deepcopy(state))
-            self.advanced = True
-            print('{} - successfully advanced after reset'.format(self.goal_id))
-            assert self.get_state() in self.initiation_set
-        else:
-            print('{} - no initiation set, skipping reset'.format(self.goal_id))
-
-        return obs
+        return super().reset()
 
     def add_passage(self, room):
         l = self.roomLoc[room]
@@ -287,66 +256,9 @@ class KeyCorridorGBLA(RoomGrid):
                     pass
 
     def step(self, action):
-        obs, reward, done, info = super().step(action)
+        return super().step(action)
 
-        self.time += 1
 
-        if self.goal_function and \
-                self.goal_function(self, self.goal_value):   # evaluate the goal function passing the env (self) as the
-                                                        # arguments and the goal_value as the target value
-                                                        # (value = unused at this point)
-            reward = self.goal_reward
-            done = True                                 # if we meet the reward, end the episode
-            self.save_termination_set()
-        elif self.advanced and \
-             self.failure_function and \
-             self.failure_function(self):               # the env may not have been reset yet, so wait for t>1
-
-            reward = -1
-            done = True
-            print('failure')
-
-        if self.goal_id in []:
-            self.render()
-            plt.gcf().canvas.set_window_title('goal = {}'.format(self.goal_id))
-
-        return obs, reward, done, info
-
-    def save_termination_set(self):
-        s = self.get_state()
-        self.termination_set.append(s)
-        print('reward - termination set size = {}'
-              .format(len(self.termination_set)))
-
-    def get_state(self):
-        s = {}
-        s['carrying'] = deepcopy(self.carrying)
-        s['agent_pos'] = deepcopy(self.agent_pos)
-        s['agent_dir'] = deepcopy(self.agent_dir)
-
-        s['grid'] = deepcopy(self.grid)
-        s['room_grid'] = deepcopy(self.room_grid)
-        s['obj'] = deepcopy(self.obj)
-
-        return s
-
-    def set_state(self, s):
-        self.carrying = s['carrying']
-        self.agent_pos = s['agent_pos']
-        self.agent_dir = s['agent_dir']
-
-        self.grid = s['grid']
-        self.room_grid = s['room_grid']
-        self.obj = s['obj']
-
-        self.advanced = True                # set a flag to notify that the env has been advanced
-
-#        if len([k for k in self.grid.grid + [self.carrying] if k and k.type == "key"])!=1:
-#            print('wtf')
-
-    def set_initiation_set(self, init_set):
-        print('setting initiation set')
-        self.initiation_set = init_set
 
 register(
     id='MiniGrid-KeyCorridorGBLA-v0',
