@@ -43,11 +43,14 @@ def GetGoalDescriptor(env):
     g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1, achieved_func=a_pickupKey, failure_func=f_pickupKey)
     g_hasKey = GoalDescriptor('hasKey', (env), (), 1, achieved_func=a_pickupKey, refinement=(g_searchKey, g_pickupKey))
 
-    g_findDoor = GoalDescriptor('findDoor', (env), (env.object_room), 1, achieved_func=a_findDoor, failure_func=f_hasKey)
-    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, failure_func=f_passDoor)
-    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, refinement=(g_findDoor, g_passDoor))
+    g_findDoor = GoalDescriptor('findDoor', (env), (), 1, achieved_func=a_findDoor, failure_func=f_hasKey)
+    g_unlockDoor = GoalDescriptor('unlockDoor', (env), (), 1, achieved_func=a_unlockDoor, failure_func=f_unlockDoor)
+    g_dropKey = GoalDescriptor('dropKey', (env), (), 1, achieved_func=a_dropKey, failure_func=f_dropKey)
+    g_passDoor = GoalDescriptor('passDoor', (env), (), 1, achieved_func=a_goToObjectRoom, failure_func=f_passDoor)
+    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (), 1, achieved_func=a_goToObjectRoom,
+                                 refinement=(g_findDoor, g_unlockDoor, g_dropKey, g_passDoor))
 
-    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, refinement=(g_hasKey, g_goToRoom1))
+    g_getNear = GoalDescriptor('getNear', (env), (), 1, achieved_func=a_goToObjectRoom, refinement=(g_hasKey, g_goToRoom1))
 
     g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, achieved_func=a_pickupObj, failure_func=f_pickupObj)
 
@@ -85,6 +88,51 @@ def f_pickupKey(env):
                             if not (dx == 0 and dy == 0)]
     return all([o.type != "key" if o else True  for o in obj_sur])
 
+##### findDoor goal #####
+
+def a_findDoor(env, v):
+    for door in env.object_room.doors:
+        if door:
+            return sum(np.abs(np.array(door.cur_pos)-env.agent_pos))<=1
+    return True
+
+def f_hasKey(env):
+    return not (env.carrying and env.carrying.type == "key")
+
+##### unlockDoor goal #####
+
+def a_unlockDoor(env, v):
+    for door in env.object_room.doors:
+        if door:
+            return sum(np.abs(np.array(door.cur_pos)-env.agent_pos))<=1
+    return True
+
+def f_unlockDoor(env):
+    ds = [-1, 0, 1]
+    obj_sur = [env.grid.get(env.agent_pos[0] + dx, env.agent_pos[1] + dy)
+               for dx in ds for dy in ds
+               if not (dx == 0 and dy == 0)]
+    doors = [o for o in obj_sur if o and o.type == "door"]
+
+    if doors:
+        return doors[0].is_locked and not (env.carrying and env.carrying.type == "key")
+    else:
+        return True
+
+##### dropKey goal #####
+
+def a_dropKey(env, v):
+    key_loc = [o.cur_pos for o in env.grid.grid if o and o.type == "key"]
+    if key_loc:
+        return not (env.get_room(1, 1).pos_inside(key_loc[0][0], key_loc[0][1]) or
+                    env.get_room(0, 1).pos_inside(key_loc[0][0], key_loc[0][1]) or
+                    env.get_room(0, 0).pos_inside(key_loc[0][0], key_loc[0][1]) )
+    else:
+        return False
+
+def f_dropKey(env):
+    return not (env.carrying or a_dropKey(env, None))
+
 ##### passDoor goal #####
 
 def a_goToObjectRoom(env, v):
@@ -98,21 +146,9 @@ def f_passDoor(env):
     doors = [o for o in obj_sur if o and o.type == "door"]
 
     if doors:
-        return doors[0].is_locked and not (env.carrying and env.carrying.type=="key")
+        return False
     else:
         return True
-    return
-
-##### findDoor goal #####
-
-def a_findDoor(env, v):
-    for door in env.object_room.doors:
-        if door:
-            return sum(np.abs(np.array(door.cur_pos)-env.agent_pos))<=1
-    return True
-
-def f_hasKey(env):
-    return not (env.carrying and env.carrying.type == "key")
 
 ##### goToRoom goal #####
 

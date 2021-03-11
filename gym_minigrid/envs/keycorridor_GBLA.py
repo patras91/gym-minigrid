@@ -75,6 +75,8 @@ class KeyCorridorGBLA(RoomGrid):
         self.roomDescriptor = taskD.roomDescriptor
         self.obj_type = "ball"
 
+        self.reward_range = (-1,1)              # I'm not sure how important this is, but trying to set it here
+
         self.roomID = {
             1: {
                 1: 'delivery',
