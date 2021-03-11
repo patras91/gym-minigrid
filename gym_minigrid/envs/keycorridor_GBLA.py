@@ -107,7 +107,7 @@ class KeyCorridorGBLA(RoomGrid):
             room_size=taskD.roomSize,
             num_rows=taskD.envDescriptor.shape[0],
             num_cols=taskD.envDescriptor.shape[1],
-            max_steps=30*taskD.roomSize**2, # may need to be updated
+            max_steps=30*taskD.roomSize, # may need to be updated
         )
 
         del(taskD)
