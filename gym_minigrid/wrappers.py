@@ -110,6 +110,9 @@ class ImgObsWrapper(gym.core.ObservationWrapper):
     def observation(self, obs):
         return obs['image']
 
+    def gen_obs(self):
+        return self.observation(self.env.gen_obs())
+
 class OneHotPartialObsWrapper(gym.core.ObservationWrapper):
     """
     Wrapper to get a one-hot encoding of a partially observable
@@ -246,6 +249,9 @@ class FullyObsWrapper(gym.core.ObservationWrapper):
             'mission': obs['mission'],
             'image': full_grid
         }
+
+    def gen_obs(self):
+        return self.observation(self.env.gen_obs())
 
 class FlatObsWrapper(gym.core.ObservationWrapper):
     """
