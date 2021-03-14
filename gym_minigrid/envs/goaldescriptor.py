@@ -46,9 +46,10 @@ def GetGoalDescriptor(env):
     g_findDoor = GoalDescriptor('findDoor', (env), (), 1, achieved_func=a_findDoor, failure_func=f_hasKey)
     g_unlockDoor = GoalDescriptor('unlockDoor', (env), (), 1, achieved_func=a_unlockDoor, failure_func=f_unlockDoor)
     g_dropKey = GoalDescriptor('dropKey', (env), (), 1, achieved_func=a_dropKey, failure_func=f_dropKey)
+    g_returnToDoor = GoalDescriptor('returnToDoor', (env), (), 1, achieved_func=a_findDoor)
     g_passDoor = GoalDescriptor('passDoor', (env), (), 1, achieved_func=a_goToObjectRoom, failure_func=f_passDoor)
     g_goToRoom1 = GoalDescriptor('goToRoom', (env), (), 1, achieved_func=a_goToObjectRoom,
-                                 refinement=(g_findDoor, g_unlockDoor, g_dropKey, g_passDoor))
+                                 refinement=(g_findDoor, g_unlockDoor, g_dropKey, g_returnToDoor, g_passDoor))
 
     g_getNear = GoalDescriptor('getNear', (env), (), 1, achieved_func=a_goToObjectRoom, refinement=(g_hasKey, g_goToRoom1))
 
@@ -125,7 +126,7 @@ def a_dropKey(env, v):
     key_loc = [o.cur_pos for o in env.grid.grid if o and o.type == "key"]
     if key_loc:
         return not (env.get_room(1, 1).pos_inside(key_loc[0][0], key_loc[0][1]) or
-                    env.get_room(0, 1).pos_inside(key_loc[0][0], key_loc[0][1]) or
+                    env.get_room(1, 0).pos_inside(key_loc[0][0], key_loc[0][1]) or
                     env.get_room(0, 0).pos_inside(key_loc[0][0], key_loc[0][1]) )
     else:
         return False
