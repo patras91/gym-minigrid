@@ -105,8 +105,8 @@ def f_hasKey(env):
 def a_unlockDoor(env, v):
     for door in env.object_room.doors:
         if door:
-            return sum(np.abs(np.array(door.cur_pos)-env.agent_pos))<=1
-    return True
+            return not door.is_locked
+    return False
 
 def f_unlockDoor(env):
     ds = [-1, 0, 1]
