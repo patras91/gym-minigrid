@@ -39,23 +39,45 @@ def GetGoalDescriptor(env):
 
     dropOff_room = env.get_room(0,0) # temporary
 
-    g_searchKey = GoalDescriptor('searchKey', (env), (), 1, achieved_func=a_searchKey)
-    g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1, achieved_func=a_pickupKey, failure_func=f_pickupKey)
-    g_hasKey = GoalDescriptor('hasKey', (env), (), 1, achieved_func=a_pickupKey, refinement=(g_searchKey, g_pickupKey))
+    g_searchKey = GoalDescriptor('searchKey', (env), (), 1, 
+        achieved_func=a_searchKey)
+    g_pickupKey = GoalDescriptor('pickupKey', (env), (), 1, 
+        achieved_func=a_pickupKey, 
+        failure_func=f_pickupKey)
+    g_hasKey = GoalDescriptor('hasKey', (env), (), 1, 
+        achieved_func=a_pickupKey, 
+        refinement=(g_searchKey, g_pickupKey))
 
-    g_findDoor = GoalDescriptor('findDoor', (env), (env.object_room), 1, achieved_func=a_findDoor, failure_func=f_hasKey)
-    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, failure_func=f_passDoor)
-    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, refinement=(g_findDoor, g_passDoor))
+    g_findDoor = GoalDescriptor('findDoor', (env), (env.object_room), 1, 
+        achieved_func=a_findDoor, 
+        failure_func=f_hasKey)
+    g_passDoor = GoalDescriptor('passDoor', (env), (env.object_room), 1, 
+        achieved_func=a_goToObjectRoom, 
+        failure_func=f_passDoor)
+    g_goToRoom1 = GoalDescriptor('goToRoom', (env), (env.object_room), 1, 
+        achieved_func=a_goToObjectRoom, 
+        refinement=(g_findDoor, g_passDoor))
 
-    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, achieved_func=a_goToObjectRoom, refinement=(g_hasKey, g_goToRoom1))
+    g_getNear = GoalDescriptor('getNear', (env), (env.object_room), 1, 
+        achieved_func=a_goToObjectRoom, 
+        refinement=(g_hasKey, g_goToRoom1))
 
-    g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, achieved_func=a_pickupObj, failure_func=f_pickupObj)
+    g_pickupObj = GoalDescriptor('pickupObj', (env), (), 1, 
+        achieved_func=a_pickupObj, 
+        failure_func=f_pickupObj)
 
-    g_goToRoom2 = GoalDescriptor('goToDropoff', (env), (dropOff_room), 1, achieved_func=a_goToDropoff, failure_func=f_hasBall)
-    g_putDown = GoalDescriptor('putDown', (env), (), 1, achieved_func=a_putDown)
-    g_deliver = GoalDescriptor('deliver', (env), (dropOff_room), 1, achieved_func=a_dropOff, refinement=(g_goToRoom2, g_putDown))
+    g_goToRoom2 = GoalDescriptor('goToDropoff', (env), (dropOff_room), 1, 
+        achieved_func=a_goToDropoff, 
+        failure_func=f_hasBall)
+    g_putDown = GoalDescriptor('putDown', (env), (), 1, 
+        achieved_func=a_putDown)
+    g_deliver = GoalDescriptor('deliver', (env), (dropOff_room), 1, 
+        achieved_func=a_dropOff, 
+        refinement=(g_goToRoom2, g_putDown))
 
-    g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, achieved_func=a_dropOff, refinement=(g_getNear, g_pickupObj, g_deliver))
+    g_dropOff = GoalDescriptor('dropOff', (env), (dropOff_room), 1, 
+        achieved_func=a_dropOff, 
+        refinement=(g_getNear, g_pickupObj, g_deliver))
 
     return g_dropOff
 
